@@ -1,3 +1,76 @@
 {
-  "competitors": []
+  "competitors": [[
+    {
+      "id": "competitor-05-1",
+      "name": "Arthur Nato Preto Machado",
+      "occupationId": "occupation-05",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-08-1",
+      "name": "Filipe de Oliveira Góis",
+      "occupationId": "occupation-08",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-09-1",
+      "name": "Bruno Ataide Lima Dourado",
+      "occupationId": "occupation-09",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-17-1",
+      "name": "Matheus Enrike Ramalho Ortiz",
+      "occupationId": "occupation-17",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-39-1",
+      "name": "Vitor Antonio Faustino dos Santos",
+      "occupationId": "occupation-39",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-50-1",
+      "name": "Anabelle da Costa Pastore",
+      "occupationId": "occupation-50",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-53-1",
+      "name": "Gustavo Enzo Santos Aguilar",
+      "occupationId": "occupation-53",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-54-1",
+      "name": "Antônio de Souza Cerdeira",
+      "occupationId": "occupation-54",
+      "photo": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "competitor-54-2",
+      "name": "Raul Combiatti Fernandes Farias",
+      "occupationId": "occupation-54",
+      "photo": "",
+      "notes": "",
+      "active": true
+    }
+  ]]
 }

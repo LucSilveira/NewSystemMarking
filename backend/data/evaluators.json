@@ -1,3 +1,76 @@
 {
-  "evaluators": []
+  "evaluators": [[
+    {
+      "id": "evaluator-05",
+      "name": "Guilherme Augusto Franco de Souza",
+      "occupationIds": [
+        "occupation-05"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-08",
+      "name": "Cristiano Brandao da Silva",
+      "occupationIds": [
+        "occupation-08"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-09",
+      "name": "Lidiane dos Santos Orti",
+      "occupationIds": [
+        "occupation-09"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-17",
+      "name": "Lucas Silveira Portal",
+      "occupationIds": [
+        "occupation-17"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-39",
+      "name": "Matheus Lino de Sousa",
+      "occupationIds": [
+        "occupation-39"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-45",
+      "name": "Vinicius Zaneti Kirilo",
+      "occupationIds": [
+        "occupation-45"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-50",
+      "name": "Jonas Ribeiro Alves",
+      "occupationIds": [
+        "occupation-50"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-53",
+      "name": "Vinicio Oliveira Santos",
+      "occupationIds": [
+        "occupation-53"
+      ],
+      "active": true
+    },
+    {
+      "id": "evaluator-54",
+      "name": "Thiago Rocha do Nascimento",
+      "occupationIds": [
+        "occupation-54"
+      ],
+      "active": true
+    }
+  ]]
 }

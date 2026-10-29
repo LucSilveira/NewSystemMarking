@@ -1,4 +1,12 @@
 {
   "editions": [
+    {
+      "id": "wsc-2026",
+      "name": "WorldSkills Shanghai 2026",
+      "phase": "WorldSkills",
+      "year": 2026,
+      "occupationCode": "17",
+      "occupationId": "occupation-17"
+    }
   ]
 }
