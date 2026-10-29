@@ -1,0 +1,34 @@
+{
+  "examTypes": [
+    {
+      "id": "speed-test",
+      "key": "speed-test",
+      "name": "Speed Test",
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "frontend",
+      "key": "frontend",
+      "name": "Front-end",
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "backend",
+      "key": "backend",
+      "name": "Back-end",
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "design-implementation",
+      "key": "design-implementation",
+      "name": "Implementação de Design",
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "team-challenge",
+      "key": "team-challenge",
+      "name": "Team Challenge",
+      "occupationId": "occupation-17"
+    }
+  ]
+}

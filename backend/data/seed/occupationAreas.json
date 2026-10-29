@@ -1,0 +1,34 @@
+{
+  "occupationAreas": [
+    {
+      "id": "area-logic",
+      "occupationId": "occupation-17",
+      "name": "Lógica e algoritmos",
+      "description": "Resolução de problemas e raciocínio lógico em desafios técnicos"
+    },
+    {
+      "id": "area-frontend",
+      "occupationId": "occupation-17",
+      "name": "Desenvolvimento Front-end",
+      "description": "Interfaces, comportamento client-side e aplicações web"
+    },
+    {
+      "id": "area-backend",
+      "occupationId": "occupation-17",
+      "name": "Desenvolvimento Back-end",
+      "description": "Persistência, APIs e regras de negócio"
+    },
+    {
+      "id": "area-design",
+      "occupationId": "occupation-17",
+      "name": "Design e interação",
+      "description": "Implementação visual, layout, animação e interação"
+    },
+    {
+      "id": "area-collaboration",
+      "occupationId": "occupation-17",
+      "name": "Colaboração e comunicação",
+      "description": "Trabalho em equipe, organização e comunicação"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "note": "Modelo de referência. Dados efetivos em arquivos individuais; não usado como banco.",
+  "resources": [
+    "examTypes",
+    "occupationAreas",
+    "editions",
+    "wsos",
+    "exams",
+    "competitors",
+    "executions",
+    "activities",
+    "technicalAssessments",
+    "competencies",
+    "occupations"
+  ]
+}

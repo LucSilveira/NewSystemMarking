@@ -1,0 +1,24 @@
+{
+  "name": "skill-training-manager",
+  "version": "0.8.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev": "node scripts/dev.mjs",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "api:check": "node backend/scripts/smoke-api.cjs",
+    "test": "node --test backend/tests/*.test.cjs",
+    "db:seed-school": "node backend/scripts/seed-school.cjs",
+    "db:check": "node backend/scripts/validate-data.cjs",
+    "demo:mapping": "node backend/scripts/demo-mapping.cjs",
+    "db:migrate-v041": "node backend/scripts/migrate-v041.cjs",
+    "db:backup": "node backend/scripts/backup.cjs",
+    "db:reset": "node backend/scripts/reset.cjs",
+    "db:export": "node backend/scripts/export.cjs",
+    "db:import-v03": "node backend/scripts/import-v03.cjs"
+  }
+}

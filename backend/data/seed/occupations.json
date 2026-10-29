@@ -1,0 +1,74 @@
+{
+  "occupations": [
+    {
+      "id": "occupation-17",
+      "code": "17",
+      "name": "Tecnologias Web",
+      "description": "WorldSkills — Web Technologies",
+      "externalCode": "17"
+    },
+    {
+      "id": "occupation-05",
+      "code": "05",
+      "name": "Engenharia Mecânica CAD",
+      "description": "",
+      "externalCode": "05"
+    },
+    {
+      "id": "occupation-08",
+      "code": "08",
+      "name": "Desenvolvimento de Aplicativos Móveis",
+      "description": "",
+      "externalCode": "08"
+    },
+    {
+      "id": "occupation-09",
+      "code": "09",
+      "name": "Soluções de Software para Negócio",
+      "description": "",
+      "externalCode": "09"
+    },
+    {
+      "id": "occupation-11",
+      "code": "11",
+      "name": "Teste de Software",
+      "description": "",
+      "externalCode": "11"
+    },
+    {
+      "id": "occupation-39",
+      "code": "39",
+      "name": "Gestão de Redes de TI",
+      "description": "",
+      "externalCode": "39"
+    },
+    {
+      "id": "occupation-45",
+      "code": "45",
+      "name": "Design Digital para Mídias Interativas",
+      "description": "",
+      "externalCode": "45"
+    },
+    {
+      "id": "occupation-50",
+      "code": "50",
+      "name": "Arte 3D para Jogos Digitais",
+      "description": "",
+      "externalCode": "50"
+    },
+    {
+      "id": "occupation-53",
+      "code": "53",
+      "name": "Computação em Nuvem",
+      "description": "",
+      "externalCode": "53"
+    },
+    {
+      "id": "occupation-54",
+      "code": "54",
+      "name": "Segurança Cibernética",
+      "description": "",
+      "externalCode": "54"
+    }
+  ]
+}
