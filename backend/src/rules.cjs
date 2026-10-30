@@ -5,7 +5,14 @@ const round=(n)=>Math.round((n+Number.EPSILON)*1e6)/1e6;
 const matches=(ref,arr)=>arr.some(x=>String(x.id)===String(ref));
 function examAspects(exam){return (exam.subcriteria||[]).flatMap(s=>(s.aspects||[]).map(a=>({...a,subcriterionId:s.id,subcriterionCode:s.code})));}
 function distinct(arr){return new Set(arr.map(String)).size===arr.length;}
-function examValidation(exam,refs){const issues=[];
+function examValidation(exam,refs,{currentId}={}){const issues=[];
+ // Evita importar um CIS como nova prova se já existir o mesmo título na ocupação.
+ // Não altera regras de provas legadas, adaptações ou edições manuais.
+ if(!currentId&&exam.cisImportedAt){
+  const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ').toLocaleLowerCase('pt-BR');
+  const duplicated=(refs.exams||[]).some(existing=>existing.occupationId===exam.occupationId&&norm(existing.title)===norm(exam.title));
+  if(duplicated)issues.push('Já existe uma prova com este título nesta ocupação; selecione a prova existente para importar o CIS');
+ }
  if(!String(exam.title||'').trim())issues.push('Título da prova obrigatório');
  if(exam.editionId && !matches(exam.editionId,refs.editions))issues.push('Edição inexistente');
  const edition=refs.editions.find(e=>e.id===exam.editionId);if(edition?.occupationId && exam.occupationId!==edition.occupationId)issues.push('A edição da prova pertence a outra ocupação');
@@ -84,7 +91,7 @@ function computeExecution(execution,exam){if(!exam)throw new Error('Prova não e
  return {mode,scores:breakdown,overallScore:earned,maxScore:max,coverage,complete:coverage===100&&structureComplete,wsosResults:wsos,percentage:earned!=null&&max?round(earned/max*100):null};
 }
 function validatePayload(resource,value,refs,{currentId}={}){const errors=[];const req=(key)=>{if(!String(value[key]||'').trim())errors.push(`${key} obrigatório`)};
- if(resource==='exams')return examValidation(value,refs);
+ if(resource==='exams')return examValidation(value,refs,{currentId});
  if(resource==='competitors'){req('name');if(!matches(value.occupationId,refs.occupations))errors.push('Modalidade inválida')}
  if(resource==='evaluators'){req('name');if(!Array.isArray(value.occupationIds)||value.occupationIds.length===0||!distinct(value.occupationIds)||value.occupationIds.some(id=>!matches(id,refs.occupations)))errors.push('Informe uma ou mais ocupações válidas para o avaliador')}
  if(resource==='teams'){req('name');if(!matches(value.occupationId,refs.occupations))errors.push('Ocupação da equipe inválida');if(!Array.isArray(value.competitorIds)||value.competitorIds.length<2||!distinct(value.competitorIds))errors.push('Equipe precisa de ao menos dois competidores distintos');else for(const id of value.competitorIds){const person=refs.competitors.find(c=>c.id===id);if(!person||person.occupationId!==value.occupationId)errors.push('Competidor de outra ocupação na equipe: '+id)}}

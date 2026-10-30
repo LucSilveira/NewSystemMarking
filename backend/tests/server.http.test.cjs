@@ -17,6 +17,8 @@ test('API HTTP: GET, POST, PATCH, DELETE with independent JSON files', { skip: a
   }
   const priorDir = process.env.DATA_DIR;
   process.env.DATA_DIR = tmp;
+  const {createUser}=require('../src/auth.cjs');
+  createUser({name:'Administrador de teste',username:'admin-test',password:'SenhaDeTesteSuperForte!2026',role:'admin',occupationIds:[],active:true});
   const app = require('../src/server.cjs');
   const server = await new Promise((resolve) => {
     const listener = app.listen(0, '127.0.0.1', () => resolve(listener));
@@ -27,20 +29,26 @@ test('API HTTP: GET, POST, PATCH, DELETE with independent JSON files', { skip: a
     assert.equal(health.status, 200);
     assert.equal((await health.json()).status, 'ok');
 
-    const exams = await fetch(`${base}/exams`);
+    const unauthorized=await fetch(`${base}/exams`);
+    assert.equal(unauthorized.status,401);
+    const login=await fetch(`${base}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'admin-test',password:'SenhaDeTesteSuperForte!2026'})});
+    assert.equal(login.status,200);
+    const cookie=login.headers.get('set-cookie').split(';')[0];
+    const authFetch=(path,options={})=>fetch(`${base}${path}`,{...options,headers:{Cookie:cookie,'X-STM-Client':'1',...(options.headers||{})}});
+    const exams = await authFetch('/exams');
     assert.equal(exams.status, 200);
     const list = await exams.json();
     assert.equal(Array.isArray(list), true);
     assert.equal(list.length >= 7, true);
 
-    const specific = await fetch(`${base}/exams/${encodeURIComponent(list[0].id)}`);
+    const specific = await authFetch(`/exams/${encodeURIComponent(list[0].id)}`);
     assert.equal(specific.status, 200);
     assert.equal((await specific.json()).id, list[0].id);
 
-    const missing = await fetch(`${base}/exams/does-not-exist`);
+    const missing = await authFetch(`/exams/does-not-exist`);
     assert.equal(missing.status, 404);
 
-    const create = await fetch(`${base}/competencies`, {
+    const create = await authFetch(`/competencies`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'Competência de teste' })
     });
@@ -48,7 +56,7 @@ test('API HTTP: GET, POST, PATCH, DELETE with independent JSON files', { skip: a
     const created = await create.json();
     assert.ok(created.id);
 
-    const update = await fetch(`${base}/competencies/${created.id}`, {
+    const update = await authFetch(`/competencies/${created.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'Competência atualizada' })
     });
@@ -58,9 +66,9 @@ test('API HTTP: GET, POST, PATCH, DELETE with independent JSON files', { skip: a
     const saved = JSON.parse(fs.readFileSync(path.join(tmp, 'competencies.json'), 'utf8'));
     assert.equal(saved.competencies.some((row) => row.id === created.id && row.name === 'Competência atualizada'), true);
 
-    const remove = await fetch(`${base}/competencies/${created.id}`, { method: 'DELETE' });
+    const remove = await authFetch(`/competencies/${created.id}`, { method: 'DELETE' });
     assert.equal(remove.status, 200);
-    const after = await fetch(`${base}/competencies/${created.id}`);
+    const after = await authFetch(`/competencies/${created.id}`);
     assert.equal(after.status, 404);
   } finally {
     await new Promise((resolve) => server.close(resolve));

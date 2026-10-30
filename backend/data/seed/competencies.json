@@ -1,3 +1,81 @@
 {
-  "competencies": []
+  "competencies": [
+    {
+      "id": "comp-spa",
+      "occupationId": "occupation-17",
+      "name": "Roteamento SPA",
+      "description": "Navegação e gerenciamento de views sem recarregar a página",
+      "areaIds": [
+        "area-frontend"
+      ]
+    },
+    {
+      "id": "comp-responsive",
+      "occupationId": "occupation-17",
+      "name": "Responsividade",
+      "description": "Adaptação de interfaces a diferentes dispositivos",
+      "areaIds": [
+        "area-frontend",
+        "area-design"
+      ]
+    },
+    {
+      "id": "comp-storage",
+      "occupationId": "occupation-17",
+      "name": "Persistência client-side",
+      "description": "Persistência local de dados em aplicações web",
+      "areaIds": [
+        "area-frontend"
+      ]
+    },
+    {
+      "id": "comp-animation",
+      "occupationId": "occupation-17",
+      "name": "Animações e transições",
+      "description": "Movimento, transição e feedback visual",
+      "areaIds": [
+        "area-design",
+        "area-frontend"
+      ]
+    },
+    {
+      "id": "comp-validation",
+      "occupationId": "occupation-17",
+      "name": "Validação de dados",
+      "description": "Validação de dados e tratamento de entradas",
+      "areaIds": [
+        "area-backend",
+        "area-frontend"
+      ]
+    },
+    {
+      "id": "comp-api",
+      "occupationId": "occupation-17",
+      "name": "APIs REST",
+      "description": "Criação e consumo de endpoints e contratos de dados",
+      "areaIds": [
+        "area-backend",
+        "area-frontend"
+      ]
+    },
+    {
+      "id": "comp-business",
+      "occupationId": "occupation-17",
+      "name": "Regras de negócio",
+      "description": "Implementação e verificação de regras de um domínio",
+      "areaIds": [
+        "area-backend",
+        "area-logic"
+      ]
+    },
+    {
+      "id": "comp-team",
+      "occupationId": "occupation-17",
+      "name": "Trabalho em equipe",
+      "description": "Comunicação, negociação e colaboração em projeto",
+      "areaIds": [
+        "area-collaboration"
+      ]
+    }
+  ]
 }

@@ -1,9 +1,16 @@
 {
   "name": "skill-training-backend",
-  "version": "0.6.0",
+  "version": "0.9.3",
   "private": true,
   "main": "src/server.cjs",
-  "scripts": {"dev": "node --watch src/server.cjs", "start": "node src/server.cjs"},
-  "dependencies": {"json-server": "0.17.4"},
-  "engines": {"node": ">=22"}
+  "scripts": {
+    "dev": "node --watch src/server.cjs",
+    "start": "node src/server.cjs"
+  },
+  "dependencies": {
+    "json-server": "0.17.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

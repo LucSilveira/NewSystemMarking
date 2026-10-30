@@ -1,5 +1,5 @@
 {
-  "evaluators": [[
+  "evaluators": [
     {
       "id": "evaluator-05",
       "name": "Guilherme Augusto Franco de Souza",
@@ -72,5 +72,5 @@
       ],
       "active": true
     }
-  ]]
+  ]
 }

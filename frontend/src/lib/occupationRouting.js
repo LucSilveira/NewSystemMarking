@@ -6,7 +6,7 @@ export const ROUTES = Object.freeze({
   activities: {slug:'atividades', label:'Atividades'},
   competitors: {slug:'competidores', label:'Competidores'},
   competencies: {slug:'competencias', label:'Competências'},
-  references: {slug:'cadastros', label:'Cadastros de apoio'},
+  references: {slug:'cadastros', label:'Configurações da modalidade'},
 });
 
 export const occupationCode = (code) => {
@@ -24,7 +24,9 @@ export function occupationPath(code, page='dashboard') {
 export function readOccupationRoute(pathname) {
   const path=String(pathname||'/').split('?')[0].split('#')[0];
   const pieces=path.split('/').filter(Boolean);
-  if(!pieces.length) return {type:'home'};
+  if(!pieces.length || (pieces.length===1 && pieces[0]==='login')) return {type:'login'};
+  if(pieces.length===1 && pieces[0]==='painel') return {type:'home'};
+  if(pieces.length===1 && pieces[0]==='admin') return {type:'admin'};
   if(pieces.length>2) return {type:'notfound'};
   let code;
   try { code=occupationCode(decodeURIComponent(pieces[0])); }

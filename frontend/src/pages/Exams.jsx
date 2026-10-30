@@ -6,6 +6,7 @@ import CisImportWizard from '../components/CisImportWizard.jsx';
 import CisInlineLoader from '../components/CisInlineLoader.jsx';
 import {aspectKey, updateAspectRelationships, updateAspectRelationshipsBatch, dropTargets, selectSourceRelations, dragSourceRelations} from '../lib/aspectRelationships.js';
 import {catalogOptions,filterExamCatalog,activeExamFilterCount} from '../lib/examCatalogFilters.js';
+import {examRemovalBlockers,examRemovalWarning} from '../lib/examRemoval.js';
 
 const arr = value => Array.isArray(value) ? value : [];
 const toggle = (items, id, checked) => checked ? [...new Set([...items, id])] : items.filter(x => x !== id);
@@ -109,6 +110,7 @@ function ExamView({exam,db,onBack,onEdit,onAdapt,onDelete}) {
       <div className="inline-actions">
         <Button variant="subtle" onClick={onAdapt}><Copy size={15}/> Criar adaptação</Button>
         <Button onClick={onEdit}><Pencil size={15}/> Editar prova</Button>
+        <Button variant="danger-ghost" onClick={onDelete}><Trash2 size={15}/> Excluir prova</Button>
       </div>
     </div>
     <section className="panel exam-workspace">
@@ -159,7 +161,6 @@ function ExamView({exam,db,onBack,onEdit,onAdapt,onDelete}) {
         </Expandable>)}
         </div>
       </div>}
-      <footer className="exam-view-footer"><Button variant="danger-ghost" onClick={onDelete}><Trash2 size={15}/> Excluir prova</Button></footer>
     </section>
   </>;
 }
@@ -457,12 +458,15 @@ export default function Exams({db,saveRecord,deleteRecord}) {
   const [screen,setScreen]=useState('list');
   const [selectedId,setSelectedId]=useState(null);
   const [draft,setDraft]=useState(null);
+  const [recentIds,setRecentIds]=useState([]);
+  const [onlyRecent,setOnlyRecent]=useState(false);
   const occupationId=db.occupations[0]?.id;
   // Evita manter filtros de outra ocupação ao trocar de modalidade pela home.
   useEffect(()=>{
     setFilter('');setTypeFilter('all');setAreaFilters([]);setModuleFilter('all');
     setEditionFilter('all');setCountryFilter('all');
     setOpenFilterGroup(null);setScreen('list');setSelectedId(null);setDraft(null);
+    setRecentIds([]);setOnlyRecent(false);
   },[occupationId]);
   const options=useMemo(()=>catalogOptions(db.exams,db.examTypes,db.occupationAreas),[db.exams,db.examTypes,db.occupationAreas]);
   const filters={search:filter,typeKey:typeFilter,areaIds:areaFilters,module:moduleFilter,editionId:editionFilter,country:countryFilter};
@@ -472,8 +476,22 @@ export default function Exams({db,saveRecord,deleteRecord}) {
     {key:'areas',title:'Áreas da ocupação',Icon:Layers3,count:areaFilters.length,available:options.areas.length>0},
     {key:'module',title:'Módulos',Icon:FileSpreadsheet,count:moduleFilter!=='all'?1:0,available:options.modules.length>0},
   ];
-  const filtered=useMemo(()=>filterExamCatalog(db.exams,filters,db),[db.exams,db.examTypes,db.editions,db.occupationAreas,filter,typeFilter,areaFilters,moduleFilter,editionFilter,countryFilter]);
-  const clearFilters=()=>{setFilter('');setTypeFilter('all');setAreaFilters([]);setModuleFilter('all');setEditionFilter('all');setCountryFilter('all');};
+  const filtered=useMemo(()=>{
+    const matches=filterExamCatalog(db.exams,filters,db);
+    const visible=onlyRecent?matches.filter(exam=>recentIds.includes(exam.id)):matches;
+    return [...visible].sort((a,b)=>{
+      const ai=recentIds.indexOf(a.id),bi=recentIds.indexOf(b.id);
+      if(ai<0&&bi<0)return 0;
+      if(ai<0)return 1;if(bi<0)return -1;
+      return ai-bi;
+    });
+  },[db.exams,db.examTypes,db.editions,db.occupationAreas,filter,typeFilter,areaFilters,moduleFilter,editionFilter,countryFilter,recentIds,onlyRecent]);
+  const clearFilters=()=>{setFilter('');setTypeFilter('all');setAreaFilters([]);setModuleFilter('all');setEditionFilter('all');setCountryFilter('all');setOnlyRecent(false);};
+  const showCreated=ids=>{
+    setRecentIds([...new Set(ids)]);setOnlyRecent(true);
+    setFilter('');setTypeFilter('all');setAreaFilters([]);setModuleFilter('all');setEditionFilter('all');setCountryFilter('all');
+    setScreen('list');setSelectedId(null);setDraft(null);setOpenFilterGroup(null);
+  };
   const selected=db.exams.find(e=>e.id===selectedId);
   const open=(exam,edit=false)=>{setSelectedId(exam.id);setDraft(null);setScreen(edit?'edit':'view')};
   const createNew=()=>{const item=newExam(db);setSelectedId(item.id);setDraft(item);setScreen('edit')};
@@ -481,14 +499,30 @@ export default function Exams({db,saveRecord,deleteRecord}) {
     const copy=clone(exam);copy.id=uid();copy.title=`${exam.title} — Adaptada`;copy.sourceExamId=exam.id;copy.version=1;delete copy.createdAt;delete copy.updatedAt;
     try{await saveRecord('exams',copy);open(copy)}catch{}
   };
-  if(screen==='import') return <CisImportWizard db={db} onBack={()=>setScreen('list')} onSave={exam=>saveRecord('exams',exam)}/>;
+  const deleteExam=async exam=>{
+    const blockers=examRemovalBlockers(exam.id,db);
+    if(blockers.length){
+      window.alert(`A prova \"${exam.title}\" não pode ser excluída porque possui vínculos: ${examRemovalWarning(blockers)}. Remova os vínculos antes de excluir.`);
+      return false;
+    }
+    if(!window.confirm(`Excluir definitivamente a prova \"${exam.title}\"?\n\nO CIS, os aspectos e os relacionamentos técnicos desta prova também serão excluídos. Esta ação não pode ser desfeita.`))return false;
+    const deleted=await deleteRecord('exams',exam.id,{skipConfirm:true});
+    if(deleted){
+      setScreen('list');setSelectedId(null);setDraft(null);
+      const remaining=recentIds.filter(id=>id!==exam.id);
+      setRecentIds(remaining);if(!remaining.length)setOnlyRecent(false);
+    }
+    return deleted;
+  };
+  if(screen==='import') return <CisImportWizard db={db} onBack={()=>setScreen('list')} onSave={exam=>saveRecord('exams',exam)} onComplete={showCreated}/>;
   if(screen==='edit'&&(draft||selected)){
     const source=draft||selected;
-    return <ExamEditor key={source.id} source={source} db={db} onClose={()=>{setDraft(null);setScreen(draft?'list':'view')}} onSave={async exam=>{await saveRecord('exams',exam);setDraft(null);setSelectedId(exam.id);setScreen('view')}}/>;
+    return <ExamEditor key={source.id} source={source} db={db} onClose={()=>{setDraft(null);setScreen(draft?'list':'view')}} onSave={async exam=>{await saveRecord('exams',exam);if(draft){showCreated([exam.id]);}else{setDraft(null);setSelectedId(exam.id);setScreen('view');}}}/>;
   }
-  if(screen==='view'&&selected) return <ExamView key={selected.id} exam={selected} db={db} onBack={()=>setScreen('list')} onEdit={()=>setScreen('edit')} onAdapt={()=>adapt(selected)} onDelete={async()=>{if(await deleteRecord('exams',selected.id))setScreen('list')}}/>;
+  if(screen==='view'&&selected) return <ExamView key={selected.id} exam={selected} db={db} onBack={()=>setScreen('list')} onEdit={()=>setScreen('edit')} onAdapt={()=>adapt(selected)} onDelete={()=>deleteExam(selected)}/>;
   return <>
-    <PageTitle eyebrow="CATÁLOGO DE PROVAS" title="Provas" desc="Encontre uma prova, consulte seu conteúdo e abra uma página dedicada para editar seus critérios e relações." actions={<div className="inline-actions"><Button variant="subtle" onClick={()=>setScreen('import')}><FileSpreadsheet size={16}/> Importar CIS</Button><Button onClick={createNew}><Plus size={16}/> Nova prova</Button></div>}/>
+    <PageTitle eyebrow="CATÁLOGO DE PROVAS" title="Provas" desc="Encontre uma prova, consulte seu conteúdo e abra uma página dedicada para editar seus critérios e relações." actions={<div className="inline-actions"><Button variant="subtle" onClick={()=>setScreen('import')}><FileSpreadsheet size={16}/> Cadastrar pelo CIS</Button><Button onClick={createNew}><Plus size={16}/> Nova prova</Button></div>}/>
+    {recentIds.length>0&&<div className="exam-catalog-created" role="status"><span><Check size={17}/> {recentIds.length} prova{recentIds.length===1?'':'s'} cadastrada{recentIds.length===1?'':'s'} recentemente. {onlyRecent?'Exibindo somente esses cadastros.':'Elas aparecem primeiro no catálogo.'}</span><Button variant="subtle" onClick={()=>setOnlyRecent(value=>!value)}>{onlyRecent?'Ver todas as provas':'Ver apenas as novas'}</Button></div>}
     <section className="exam-catalog-filters" aria-label="Filtros do catálogo de provas">
       <div className="exam-catalog-toolbar">
         <div className="exam-catalog-primary-fields">
@@ -497,7 +531,7 @@ export default function Exams({db,saveRecord,deleteRecord}) {
           <label className="exam-catalog-input-field"><span>País de referência</span><select value={countryFilter} onChange={e=>setCountryFilter(e.target.value)}><option value="all">Todos os países</option>{options.countries.map(country=><option value={country} key={country}>{country}</option>)}</select></label>
         </div>
         <div className="exam-catalog-toolbar-actions">
-          <span className="exam-catalog-result-count" role="status">{filtered.length} de {db.exams.length} provas</span>
+          <span className="exam-catalog-result-count" role="status">{filtered.length} de {db.exams.length} provas{onlyRecent?' · cadastros recentes':''}</span>
           <div className="exam-catalog-group-toggles" role="group" aria-label="Filtros por categoria">
             {filterGroups.filter(group=>group.available).map(group=><button key={group.key} type="button"
               className={`exam-catalog-more${openFilterGroup===group.key?' is-open':''}`}
@@ -523,10 +557,10 @@ export default function Exams({db,saveRecord,deleteRecord}) {
     </section>
     <div className="exam-card-grid">
       {filtered.map(exam=><article className="exam-card" key={exam.id}>
-        <div className="exam-card-top"><div className="tags"><Badge tone="blue">{exam.module||'Sem módulo'}</Badge><Badge>{typeName(exam,db)}</Badge></div><strong>{points(exam.maxScore)} pts</strong></div>
+        <div className="exam-card-top"><div className="tags"><Badge tone="blue">{exam.module||'Sem módulo'}</Badge><Badge>{typeName(exam,db)}</Badge>{recentIds.includes(exam.id)&&<Badge tone="green">Novo cadastro</Badge>}</div><strong>{points(exam.maxScore)} pts</strong></div>
         <h2>{exam.title}</h2><p className="exam-card-description">{exam.description||'Descrição ainda não cadastrada.'}</p>
         <div className="exam-card-meta"><span><strong>Edição</strong>{lookup(db.editions,exam.editionId)}</span><span><strong>País</strong>{countryName(exam)}</span></div>
-        <div className="exam-card-bottom"><Button variant="subtle" onClick={()=>open(exam)}><Eye size={15}/> Visualizar</Button><Button variant="ghost" onClick={()=>open(exam,true)}><Pencil size={15}/> Editar</Button></div>
+        <div className="exam-card-bottom"><Button variant="subtle" onClick={()=>open(exam)}><Eye size={15}/> Visualizar</Button><Button variant="ghost" onClick={()=>open(exam,true)}><Pencil size={15}/> Editar</Button><Button variant="danger-ghost" className="exam-card-delete" title={`Excluir prova: ${exam.title}`} aria-label={`Excluir prova: ${exam.title}`} onClick={()=>deleteExam(exam)}><Trash2 size={15}/></Button></div>
       </article>)}
       {!filtered.length&&<div className="panel exam-empty-card"><Empty title="Nenhuma prova encontrada" subtitle="Ajuste os filtros ou cadastre uma nova prova."/></div>}
     </div>

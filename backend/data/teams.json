@@ -1,4 +1,14 @@
 {
   "teams": [
+    {
+      "id": "team-54-01",
+      "name": "Dupla — Segurança Cibernética",
+      "occupationId": "occupation-54",
+      "competitorIds": [
+        "competitor-54-1",
+        "competitor-54-2"
+      ],
+      "active": true
+    }
   ]
 }

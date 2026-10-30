@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {occupationPath,readOccupationRoute,occupationCode,ROUTES} from '../src/lib/occupationRouting.js';
 
-test('raiz mostra a seleção de ocupações',()=>assert.deepEqual(readOccupationRoute('/'),{type:'home'}));
+test('raiz abre login e painel autenticado tem rota própria',()=>{assert.deepEqual(readOccupationRoute('/'),{type:'login'});assert.deepEqual(readOccupationRoute('/login'),{type:'login'});assert.deepEqual(readOccupationRoute('/painel'),{type:'home'});assert.deepEqual(readOccupationRoute('/admin'),{type:'admin'});});
 test('código na URL identifica a ocupação e a tela',()=>{
   assert.deepEqual(readOccupationRoute('/17/provas'),{type:'workspace',code:'17',page:'exams'});
   assert.deepEqual(readOccupationRoute('/54/competidores'),{type:'workspace',code:'54',page:'competitors'});

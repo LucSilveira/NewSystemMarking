@@ -49,7 +49,7 @@ export default function SchoolSettingsModal({kind,db,onClose,onSave,onDelete}){
       <span>{items.length} registro{items.length===1?'':'s'}</span>
       <Button onClick={()=>edit(initial(kind,db))}><Plus size={15}/> Novo registro</Button>
     </div>
-    <div className="school-settings-grid">
+    <div className={`school-settings-grid ${record?'has-editor':'is-list-only'}`}>
       <div className="school-settings-list">
         {items.map(item=><div className={`school-settings-entry ${record?.id===item.id?'is-selected':''}`} key={item.id}>
           <span>{summary(kind,item,db)}</span>
@@ -58,8 +58,8 @@ export default function SchoolSettingsModal({kind,db,onClose,onSave,onDelete}){
         </div>)}
         {!items.length&&<p className="school-settings-hint">Nenhum cadastro nesta categoria.</p>}
       </div>
-      <div className="school-settings-editor">
-        {record?<form onSubmit={submit}>
+      {record&&<div className="school-settings-editor">
+        <form onSubmit={submit}>
           <div className="school-settings-editor-heading"><strong>{record._new?'Novo registro':'Editar registro'}</strong><button type="button" onClick={()=>setRecord(null)} title="Cancelar edição"><X size={16}/></button></div>
           {kind==='occupations'&&<>
             <label className="school-settings-field">Código<input required value={record.code||''} onChange={e=>set('code',e.target.value)}/></label>
@@ -85,8 +85,8 @@ export default function SchoolSettingsModal({kind,db,onClose,onSave,onDelete}){
           </>}
           {error&&<p role="alert" className="school-settings-error">{error}</p>}
           <div className="school-settings-actions"><Button variant="ghost" onClick={()=>setRecord(null)}>Cancelar</Button><Button type="submit" disabled={saving}><Save size={15}/>{saving?'Salvando...':'Salvar'}</Button></div>
-        </form>:<div className="school-settings-empty">Selecione um registro para editar ou crie um novo.</div>}
-      </div>
+        </form>
+      </div>}
     </div>
   </Modal>;
 }

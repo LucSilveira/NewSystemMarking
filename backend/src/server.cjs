@@ -11,6 +11,7 @@ const jsonServer = require('json-server');
 const { randomUUID } = require('node:crypto');
 const { RESOURCES, read, write, all } = require('./data.cjs');
 const { validatePayload, computeExecution } = require('./rules.cjs');
+const auth=require('./auth.cjs');
 
 const app = jsonServer.create();
 app.disable('x-powered-by');
@@ -34,11 +35,70 @@ const safe = (handler) => (req, res) => {
   }
 };
 
-app.get('/api', (_req, res) => res.json({ status: 'ok', endpoints: ['/api/health', ...RESOURCES.map((r) => `/api/${r}`)] }));
+
+// Public: health, login and installation status. All data routes below require a session.
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', storage: 'separate JSON files', resources: RESOURCES }));
+const attempted=new Map();
+app.get('/api/auth/status', (_req,res)=>res.json({configured:auth.getUsers().some(x=>x.role==='admin'&&x.active!==false)}));
+app.post('/api/auth/login', safe((req,res)=>{
+  const username=String(req.body?.username||'').trim().toLowerCase();
+  const password=req.body?.password;
+  const key=`${req.ip||'local'}:${username}`;
+  const entry=attempted.get(key)||{count:0,until:0};
+  if(entry.until>Date.now())return fail(res,429,'Muitas tentativas. Tente novamente mais tarde.');
+  if(typeof password!=='string'||password.length>1024||username.length>254)return fail(res,401,'Credenciais inválidas');
+  const user=auth.findUserByLogin(auth.getUsers(),username);
+  if(!user||!auth.verifyPassword(password,user.passwordHash)){
+    const count=(entry.until&&entry.until<Date.now()?0:entry.count)+1;
+    attempted.set(key,{count,until:count>=8?Date.now()+15*60*1000:0});
+    return fail(res,401,'Credenciais inválidas');
+  }
+  attempted.delete(key);
+  const token=auth.createSession(user.id);
+  res.setHeader('Set-Cookie',auth.cookieHeader(token,req));
+  return res.json({user:auth.publicUser(user)});
+}));
+app.use('/api',(req,res,next)=>{
+  const token=auth.cookieToken(req);
+  const user=auth.userForToken(token);
+  if(!user)return fail(res,401,'Sessão expirada ou acesso não autorizado');
+  if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.get('X-STM-Client')!=='1')return fail(res,403,'Solicitação de escrita sem confirmação da aplicação');
+  req.user=user;req.authToken=token;next();
+});
+app.get('/api/auth/me',(req,res)=>res.json({user:req.user}));
+app.post('/api/auth/logout',(req,res)=>{auth.logout(req.authToken);res.setHeader('Set-Cookie',auth.clearCookie(req));res.json({ok:true})});
+app.get('/api/admin/users',(req,res)=>req.user.role==='admin'?res.json(auth.getUsers().map(auth.publicUser)):fail(res,403,'Acesso administrativo necessário'));
+app.post('/api/admin/users',safe((req,res)=>{
+  if(req.user.role!=='admin')return fail(res,403,'Acesso administrativo necessário');
+  if(!req.body?.password)return fail(res,422,'Senha obrigatória');
+  try {
+    const occupationIds=req.body.occupationIds||[];
+    if(occupationIds.some(id=>!read('occupations').some(x=>x.id===id)))return fail(res,422,'Ocupação inexistente');
+    return res.status(201).json(auth.createUser(req.body));
+  }catch(err){return fail(res,422,err.message)}
+}));
+app.put('/api/admin/users/:id',safe((req,res)=>{
+  if(req.user.role!=='admin')return fail(res,403,'Acesso administrativo necessário');
+  try {
+    const ids=req.body?.occupationIds;
+    if(ids&&ids.some(id=>!read('occupations').some(x=>x.id===id)))return fail(res,422,'Ocupação inexistente');
+    return res.json(auth.updateUser(req.params.id,req.body));
+  }catch(err){return fail(res,422,err.message)}
+}));
+app.post('/api/auth/change-password',safe((req,res)=>{
+  const users=auth.getUsers();
+  const existing=users.find(x=>x.id===req.user.id);
+  if(!existing||!auth.verifyPassword(req.body?.currentPassword,existing.passwordHash))return fail(res,401,'Senha atual incorreta');
+  try {auth.updateUser(existing.id,{password:req.body?.newPassword});res.setHeader('Set-Cookie',auth.clearCookie(req));return res.json({ok:true,relogin:true})}
+  catch(err){return fail(res,422,err.message)}
+}));
+const visibleDB=(user)=>auth.scopedData(all(),user);
+
+app.get('/api', (_req, res) => res.json({ status: 'ok', endpoints: ['/api/health', ...RESOURCES.map((r) => `/api/${r}`)] }));
+
 
 app.get('/api/reports/overview', safe((_req, res) => {
-  const db = all();
+  const db = visibleDB(_req.user);
   const latest = [...db.executions].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 12);
   const valid = db.executions.filter((e) => e.overallScore != null && e.maxScore > 0);
   const weightedMax = valid.reduce((sum, e) => sum + e.maxScore, 0);
@@ -58,7 +118,7 @@ app.get('/api/reports/overview', safe((_req, res) => {
 
 app.get('/api/reports/competitor/:id', safe((req, res) => {
   const { id } = req.params;
-  const db = all();
+  const db = visibleDB(req.user);
   if (!db.competitors.some((x) => x.id === id)) return fail(res, 404, 'Competidor não encontrado');
   const recentFirst = (a, b) => String(b.date).localeCompare(String(a.date));
   res.json({
@@ -113,6 +173,9 @@ function saveResource(resource, req, res, existing = null) {
   if (isNew && rows.some((r) => String(r.id) === String(candidate.id))) return fail(res, 409, 'ID já cadastrado');
 
   const refs = all();
+  if(existing&&!auth.canMutate(req.user,resource,existing,refs))return fail(res,403,'Sem permissão nesta ocupação');
+  if(!auth.canMutate(req.user,resource,candidate,refs))return fail(res,403,'Sem permissão para cadastrar nesta ocupação');
+  if(resource==='exams'&&candidate.sourceExamId&&refs.exams.some(x=>x.id===candidate.sourceExamId&&!auth.visible(req.user,'exams',x,refs)))return fail(res,403,'Prova de origem não autorizada');
   const issues = validatePayload(resource, candidate, refs, { currentId: existing?.id });
   if (issues.length) return fail(res, 422, issues.join(' | '), { issues });
 
@@ -165,6 +228,7 @@ function deleteResource(resource, req, res) {
   const rows = read(resource);
   const existing = rows.find((x) => String(x.id) === id);
   if (!existing) return fail(res, 404, 'Registro não encontrado');
+  if(!auth.canMutate(req.user,resource,existing,all()))return fail(res,403,'Sem permissão nesta ocupação');
   if (resource === 'examTypes' && read('exams').some(ex => ex.typeKey===existing.key && (!existing.occupationId || ex.occupationId===existing.occupationId))) return fail(res,409,'Tipo de prova usado por prova cadastrada');
   if (resource === 'competitors' && read('teams').some(t => (t.competitorIds || []).includes(id))) return fail(res, 409, 'Competidor vinculado a uma equipe');
   if (resource === 'occupations' && read('evaluators').some(e=>(e.occupationIds||[]).includes(id))) return fail(res,409,'Ocupação vinculada a avaliador');
@@ -196,9 +260,10 @@ function deleteResource(resource, req, res) {
 for (const resource of RESOURCES) {
   const collection = `/api/${resource}`;
   const item = `${collection}/:id`;
-  app.get(collection, safe((_req, res) => res.json(read(resource))));
+  app.get(collection, safe((req, res) => {const db=all();res.json(read(resource).filter(row=>auth.visible(req.user,resource,row,db)))}));
   app.get(item, safe((req, res) => {
-    const found = read(resource).find((x) => String(x.id) === String(req.params.id));
+    const db=all();
+    const found = read(resource).find((x) => String(x.id) === String(req.params.id)&&auth.visible(req.user,resource,x,db));
     return found ? res.json(found) : fail(res, 404, 'Registro não encontrado');
   }));
   app.post(collection, safe((req, res) => saveResource(resource, req, res)));

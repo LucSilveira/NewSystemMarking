@@ -1,3 +1,44 @@
 {
-  "wsos": []
+  "wsos": [
+    {
+      "id": "wsos-1",
+      "code": "1",
+      "name": "Organização",
+      "occupationCode": "17",
+      "referenceWeight": 5,
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "wsos-2",
+      "code": "2",
+      "name": "Comunicação",
+      "occupationCode": "17",
+      "referenceWeight": 5,
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "wsos-3",
+      "code": "3",
+      "name": "Implementação de Design",
+      "occupationCode": "17",
+      "referenceWeight": 25,
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "wsos-4",
+      "code": "4",
+      "name": "Front-end",
+      "occupationCode": "17",
+      "referenceWeight": 25,
+      "occupationId": "occupation-17"
+    },
+    {
+      "id": "wsos-5",
+      "code": "5",
+      "name": "Back-end",
+      "occupationCode": "17",
+      "referenceWeight": 40,
+      "occupationId": "occupation-17"
+    }
+  ]
 }

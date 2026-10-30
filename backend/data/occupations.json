@@ -1,5 +1,5 @@
 {
-  "occupations": [[
+  "occupations": [
     {
       "id": "occupation-17",
       "code": "17",
@@ -27,6 +27,13 @@
       "name": "Soluções de Software para Negócio",
       "description": "",
       "externalCode": "09"
+    },
+    {
+      "id": "occupation-11",
+      "code": "11",
+      "name": "Teste de Software",
+      "description": "",
+      "externalCode": "11"
     },
     {
       "id": "occupation-39",
@@ -63,5 +70,5 @@
       "description": "",
       "externalCode": "54"
     }
-  ]]
+  ]
 }

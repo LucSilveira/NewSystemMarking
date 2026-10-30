@@ -1,7 +1,7 @@
 const base=(import.meta.env.VITE_API_URL||'/api').replace(/\/$/,'');
 export async function request(resource='',options={}){
   const url=`${base}${resource.startsWith('/')?resource:`/${resource}`}`;
-  const resp=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})},body: options.body!=null&&typeof options.body!=='string'?JSON.stringify(options.body):options.body});
+  const resp=await fetch(url,{...options,headers:{'Content-Type':'application/json','X-STM-Client':'1',...(options.headers||{})},body: options.body!=null&&typeof options.body!=='string'?JSON.stringify(options.body):options.body});
   if(!resp.ok){let message=`Erro HTTP ${resp.status}`;try{const error=await resp.json();message=error.error||message}catch{}throw new Error(message)}
   if(resp.status===204)return null;
   return resp.json();
