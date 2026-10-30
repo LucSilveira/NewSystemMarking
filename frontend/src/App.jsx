@@ -89,7 +89,7 @@ export default function App(){
   {loading&&!error&&!db.occupations.length?<div className="loading">Carregando dados autorizados...</div>:<>
    {page==='dashboard'&&<Dashboard db={scopedDb} selectTab={changePage}/>}
    {page==='exams'&&<Exams {...contentProps}/>}
-   {page==='executions'&&<Executions {...contentProps}/>}
+   {page==='executions'&&<Executions {...contentProps} view={route.executionView} executionId={route.executionId} onNavigate={go} occupationCode={currentOccupation.code}/>}
    {page==='activities'&&<Activities {...contentProps}/>}
    {page==='competitors'&&<Competitors {...contentProps}/>}
    {page==='competencies'&&<Competencies {...contentProps}/>}

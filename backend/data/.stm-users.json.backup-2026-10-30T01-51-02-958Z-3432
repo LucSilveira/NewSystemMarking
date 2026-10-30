@@ -1,0 +1,26 @@
+[
+  {
+    "id": "8d97d43f-c091-4dc1-a457-cba6505f3b6b",
+    "name": "Administração da Escola",
+    "username": "competicao",
+    "email": "competicao@email.com",
+    "role": "admin",
+    "occupationIds": [],
+    "active": true,
+    "createdAt": "2026-10-30T00:33:44.661Z",
+    "passwordHash": "scrypt$02fb1f4fb94d61b37bdcdf836ff40442$ec586b1e373d856ee44b842f56afe48d1ebb21762cf191cbb4eff5f4af8a272f8858468c272a00eaab8fda445f4f4ef0f1e947c4529bd35c56e95c429e97e4bf"
+  },
+  {
+    "id": "54f316ff-4418-44b9-bef4-dbb30a44115b",
+    "name": "Lucas Silveira Portal",
+    "username": "lucas.portal",
+    "email": "lucas.portal@sp.senai.br",
+    "role": "evaluator",
+    "active": true,
+    "occupationIds": [
+      "occupation-17"
+    ],
+    "createdAt": "2026-10-30T00:33:44.662Z",
+    "passwordHash": "scrypt$9bf13c098d584dc24e933c2e40c228f3$f1c496a14c082e39923f380f326d5c457a38f833fe7de454f675520142a3cfd4e430a391d55f49a31ae05b41778155e15592c3e5f0e45e09e184d3abe25c1a7b"
+  }
+]

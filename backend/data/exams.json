@@ -35,11 +35,614 @@
       "competencies": [],
       "documentUrl": "",
       "maxScore": 16.5,
-      "subcriteria": [],
+      "subcriteria": [
+        {
+          "id": "8d6101b6-9c41-4a6a-b36b-0331c92f8069",
+          "code": "B1",
+          "title": "SPA",
+          "dayOfMarking": "2",
+          "cisSourceRow": 73,
+          "aspects": [
+            {
+              "id": "1cc0b40b-1f49-4cde-a1ce-00adf9288220",
+              "description": "No server-side code; all data must be loaded from the provided static JSON files (no backend API server is required or permitted).",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 74,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "50a5be35-e70d-404b-9de6-d168f5bc78a2",
+              "description": "No full HTML document reload occurs when navigating between views",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "and no loading other HTML files (All within one HTML file). Check by Cypress b1-02-single-html.cy.js",
+              "cisSourceRow": 75,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "f73e8ea5-d8e1-4e88-8ee9-22082df3ccfa",
+              "description": "A persistent bottom navigation bar must be visible across all views.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "3",
+              "considerations": "Check by Cypress b1-03-bottom-nav.cy.js",
+              "cisSourceRow": 76,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "92e6f9ff-319b-4f28-80fa-de39e9563df7",
+              "description": "Use hash-based routing with these four routes: #/schedule, #/map, #/stamps, and #/photo.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check by Cypress b1-04-hash-routes.cy.js only.",
+              "cisSourceRow": 77,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "7638ad42-cb02-4142-a1f7-f75917b69699",
+              "description": "Deep linking must work: navigating directly to a view's hash URL renders the correct view.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Check by b1-05-deeplink.cy.js only. Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 78,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "8d2f1b9e-a11a-4364-8043-093a7e128e09",
+              "description": "The bottom navigation bar must visually highlight the currently active tab based on the current route state.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 79,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "1f6a2824-00f7-4258-aaa5-3de765d4e292",
+              "description": "expert_readme.txt is provided on how to get your project up and running, and where to access your project.",
+              "method": "J",
+              "maxScore": 0.75,
+              "wsosSection": "1",
+              "considerations": "",
+              "judgement": {
+                "0": "No documentation instructions are provided, or the file does not tell the Expert how to start the project or where to access it.",
+                "1": "The file is present, but it only answers one of the two requested parts — either how to start, or where to access — not both.",
+                "2": "The file is present and includes both parts requested: how to start, and where to access. One part is incomplete (for example a URL with no port, or a start command with no indication which folder to run it in), but the Expert can still reach the project with one obvious assumption.",
+                "3": "The file states how to start the project and where to open it, with enough detail that an Expert can follow the file once and reach the app (a start command or method, and a URL / port / file path). Extra but necessary information is included to make the Expert fully understand how to get the project up and running."
+              },
+              "cisSourceRow": 80,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "03b278c1-1a57-4911-b8a6-ebe04528085b",
+          "code": "B2",
+          "title": "Views",
+          "dayOfMarking": "2",
+          "cisSourceRow": 85,
+          "aspects": [
+            {
+              "id": "f8d5f74a-3aca-432d-ba60-895511be4d33",
+              "description": "There is Schedule / Speakers view",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check by b2-02-sessions-speakers.cy.js only. session list, session detail, speaker list, and speaker profile, venue view, attendance stamps view, photo booth view. Reduce 0.25 per missing. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 86,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "d13737e0-ba58-4a44-a83a-941ebfbf6ee6",
+              "description": "A switch or navigation must allow switching between Sessions view and Speakers view.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check by b2-02-sessions-speakers.cy.js only.",
+              "cisSourceRow": 87,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "8003cbc1-138f-45c5-a2bc-464f8781e40c",
+              "description": "The default view shows the Sessions list.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check by b2-02b-default-view.cy.js",
+              "cisSourceRow": 88,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "9aec6a54-a710-468f-b635-dbf8fe046c25",
+              "description": "The schedule list must display: Session Title, Speaker Name, Time, and Room.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 89,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "141a3e4e-fd6f-4ed8-983c-e3d046bea5dc",
+              "description": "Whenever a room/location name is shown in the schedule list and speaker list and speaker view, display a small color dot that matches the venue map color for that location.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 90,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "a153dc31-5ed7-4abd-b914-91f9bad39a9c",
+              "description": "Venue display names must be consistent everywhere",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check session list, speaker view, and map",
+              "cisSourceRow": 91,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "3a3577a3-90a5-4342-90e0-e78acae93c8d",
+              "description": "The speaker list must display: Speaker Name, Profile Picture, and Session List",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "No need to check the color dots here.",
+              "cisSourceRow": 92,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "1f73d336-a9e5-4afc-b277-92b3f7fd6a51",
+              "description": "There are 4 days in the schedule view.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Check by Cypress b2-07-four-days.cy.js. Default day is Day 1. Users is able to navigate between Day 1, Day 2, Day 3, and Day 4. The default day is Day 1. And show correct information. Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 93,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b7380c73-4dd4-4a7c-b99a-249b9224d70e",
+              "description": "The session list must be scrollable without breaking the bottom navigation bar.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 94,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ce6a0a76-6293-4729-878f-9e6b0546ae33",
+              "description": "Users can open a session detail view that shows session information and the attendance code for that session.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 95,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "8246b40f-0eef-4332-a24b-219855d69239",
+              "description": "A clear Back control (button or link) returns from session detail (or speaker profile) to the previous list.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 96,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e3351c22-23f1-4caf-a4b2-d81c2a73e3c7",
+              "description": "The speaker list and profiles is comprehensive, modern, and elegant, with clear information hierarchy",
+              "method": "J",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "judgement": {
+                "0": "There is no clear hierarchy in the design elements used. No reliable hierarchy. Name, photo, sessions and bio compete or scatter; or one of identity / sessions is visually missing. A user cannot tell what to read first.",
+                "1": "There is a basic hierarchy among the design elements, but many need improvement. Required content is readable and roughly ordered (name near the photo, sessions nearby), which meets a basic conference-app standard. Levels are not consistently signalled: similar size/weight for name, sessions and bio; weak grouping; or the profile is just the list card stretched. A user can find the information, but must read rather than scan.",
+                "2": "There is a usable hierarchy between the elements, with some adjustments needed to make it excellent. A usable hierarchy exists on both screens, and identity is still first. One of the following is true: session titles compete with the name; bio/meta is as loud as the sessions; list cards are clear but the profile flattens; or the profile is clear but the list treats every line equally.",
+                "3": "The implementation of hierarchy among all elements, making it easy for users to understand the author's narrative. List and profile both present three distinct levels: identity (photo + name) is strongest; session titles are clearly secondary; bio and meta are quietest."
+              },
+              "cisSourceRow": 97,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "f6e5afb0-a3d8-4ae7-bcbc-36e3019e1bc4",
+          "code": "B3",
+          "title": "Venue",
+          "dayOfMarking": "2",
+          "cisSourceRow": 102,
+          "aspects": [
+            {
+              "id": "bd98a27e-3502-45bb-a2e3-bf33ada2f41e",
+              "description": "Map zones follows the screenshot and includes the following: Room 1, Room 2, Room 3, Room 4, Hall, Public Area, Road Show, Entrance, Shop, Restaurant, and Corridor (horizontal and vertical).",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Reduce 0.25 per mismatch (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 103,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ad46ab66-326a-4504-bc70-83ccf12c6695",
+              "description": "Mobile layout (default, below 768 px) follows the 2-column grid arrangement consistent with the provided sketch. Corridors are hidden on mobile.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "3",
+              "considerations": "",
+              "cisSourceRow": 104,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "1255bb2c-7907-4098-904e-79575f2f4e23",
+              "description": "Tablet layout (min-width: 768 px) follows the 3-column grid arrangement consistent with the provided sketch. Corridors are visible on tablet.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "3",
+              "considerations": "",
+              "cisSourceRow": 105,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "a5e9cbe4-497d-49f7-a0c1-8abc2df9b58c",
+              "description": "Zone font colors and border colors follow",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "2",
+              "considerations": "Zone fills with 10-16% white tint. Reduce 0.25 per mismatch (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 106,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "586e9035-b326-4a7b-a871-9af50ab75952",
+              "description": "Clicking room 1 to 4 and hall shows a slide-up panel",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "The slide-up panel is populated with the location's sessions (title, speaker, time, day as available)  Reduce 0.25 per missing or mismatch (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 107,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "9a20823c-7e27-4404-ac0a-5a7f99d1db17",
+              "description": "Tapping the empty/backdrop area or the Done button closes the modal.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 108,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "039384f4-729e-4fd8-8269-b5433cc3b523",
+              "description": "A slide-up transition animates the modal showing and hiding motion.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 109,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e45519da-3265-4ed4-9741-8b5061ea5514",
+              "description": "The motion must respect system's motion reduction preference.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 110,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "890e6ed6-dfb9-45b6-a7f7-d606b6883511",
+              "description": "If any JSON load fails (schedule, rooms, room sessions), show a user-friendly message in the element with data-testid=\"error-message\".",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Check by Cypress b3-06-json-error.cy.js. Reduce 0.25 per missing. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 111,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "86c32299-23dd-472c-9ef4-3d9cad50b169",
+          "code": "B4",
+          "title": "Attendance Stamps",
+          "dayOfMarking": "1",
+          "cisSourceRow": 112,
+          "aspects": [
+            {
+              "id": "88cbdb55-5e22-451e-a798-4012cc4ff84d",
+              "description": "A progress indicator at the top of the view shows \"X out of 16\" stamps collected and a <progress> element progress bar.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "the code is in api/schedule.json",
+              "cisSourceRow": 113,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b97b80de-2f8e-494e-acca-20cddcd41008",
+              "description": "There is a \"Enter attendance code\" form (input + collect action)",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 114,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "17aa0aec-0663-427b-bf2f-f40ef5dd327a",
+              "description": "The \"Enter attendance code\" form (input + collect action) must stick to the top of the viewport (under the app header) while the stamp grid scrolls",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "3",
+              "considerations": "",
+              "cisSourceRow": 115,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b7a85581-d86c-4152-96bd-d831eb55ba59",
+              "description": "The stamp grid uses a 2-column layout on mobile and a 4-column layout on tablet, with correct count of stamp placeholders",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "3",
+              "considerations": "There are 16 stamps placeholders for 16 sessions",
+              "cisSourceRow": 116,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "7a7e371f-8e04-44a5-ba32-0ef205ee3614",
+              "description": "Uncollected stamp tiles are dimmed; collected stamps display the stamp graphic.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 117,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "eb0b1dfe-2ad1-428e-9bac-37544cd1f8d4",
+              "description": "An incorrect code entry must display a clear error message.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 118,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "66dab795-72fa-4fa4-8f4f-61a809b65fea",
+              "description": "Entering an already-collected code must give clear feedback (error or info) without double-counting.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 119,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "85ebd292-9b21-4e0a-8490-461a140b819c",
+              "description": "Collected stamps must persist across page reloads (for example using localStorage).",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "Check by Cypress b4-04-collect-and-persist.cy.js",
+              "cisSourceRow": 120,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "0bf3f03e-518e-4e1c-87a8-c74d327acefd",
+              "description": "When a stamp is collected, a subtle and elegant animation plays (stamp graphic scales from large to fit with a bounce effect and ribbon particles).",
+              "method": "J",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "",
+              "judgement": {
+                "0": "No animations is implemented. No motion is tied to that collect.",
+                "1": "A successful collect has some motion on that tile (fade, pop, colour change), so the user can see which stamp was just earned. The specified sequence is not used: there is no scale-from-large-to-fit with bounce and ribbons.",
+                "2": "A successful new collect plays a clear celebration that includes scale-from-large-to-fit, but one specified part is missing or wrong: no bounce, no ribbon particles, the graphic never starts larger than the tile, or the same sequence also plays for a duplicate/wrong code or on reload.",
+                "3": "On a successful new collect, all three motions run as one sequence: the stamp graphic starts larger than its tile, scales down into the tile, lands with a bounce, and ribbon particles play then disappear. The sequence is short, local to that collect, and does not run again for a wrong code, a duplicate code, or a page reload."
+              },
+              "cisSourceRow": 121,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "c862dbdf-5d79-46ae-9700-565acfd55d57",
+          "code": "B5",
+          "title": "Photo Booth",
+          "dayOfMarking": "1",
+          "cisSourceRow": 126,
+          "aspects": [
+            {
+              "id": "733b1dd6-b51c-4885-92de-d4b047005a32",
+              "description": "Users can select an image file or capture a photo to composite with a frame overlay.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 127,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "62461bc7-d8e8-4b8c-9ecd-02302a05c6b5",
+              "description": "The file input element must restrict file selection to image files only (image/*).",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 128,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "6227f0d6-2b7f-453e-8a08-18d6971c33a3",
+              "description": "The uploaded image is scaled and centred without aspect ratio distortion or stretching.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "The uploaded image must cover the entire canvas area without letterboxing or empty gaps.",
+              "cisSourceRow": 129,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "8683c4db-a4c1-4b72-b897-b41454ada4b6",
+              "description": "The canvas must be styled responsively so it fits the viewport without causing horizontal page scrolling.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 130,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e3523e13-b30f-48a5-954e-a9a3973b2cfd",
+              "description": "The provided frame overlay is drawn exactly on top of the user image; canvas internal dimensions must match the native dimensions of the currently active frame PNG file.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 131,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ee44d155-77bc-44a9-8e46-a207cf3185fe",
+              "description": "Users can select a frame design from the provided frame assets. After selecting a frame, users can choose between Normal ratio (1080 × 1080 px) and Wide ratio (1600 × 1080 px).",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Frame designs may provide a Normal PNG, a Wide PNG, or both. When the user changes the ratio, the canvas and frame overlay must automatically switch to the matching PNG for the currently selected frame design",
+              "cisSourceRow": 132,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "eb8e0b86-0360-4995-a58a-fd13fe3387cb",
+              "description": "If the selected design has no Normal variant, the Normal option must be disabled and must not be selectable. If it has no Wide variant, the Wide option must be disabled and must not be selectable.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 133,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ca62db0f-6f8c-495b-8166-8d3d3f7aac6a",
+              "description": "When the user selects a different frame design that does not support the currently active ratio, the application must automatically switch to an available ratio for that design and load the corresponding PNG.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "",
+              "cisSourceRow": 134,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "8f0d54c2-7a4b-46e9-8c66-c8a2f303eb6c",
+              "description": "Users can download the composed image. Clicking “Download” button triggers file download.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Reduce 0.25 if filename is wrong or per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 135,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e815d0e8-c3ee-4b20-b4e4-9ea4419aac21",
+              "description": "Users can share the composed image via the Web Share API.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "If Web Share is unsupported, an automatic file download is triggered without throwing any JavaScript errors. Reduce 0.25 if missing feature detection or per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 136,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "4683ceea-f7b7-43f2-b4d6-60dd03c451a2",
+              "description": "The Web Share payload must include a title, a text message, and the composited image as a File object.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "4",
+              "considerations": "Reduce 0.25 if missing any. (Enter number missing)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 137,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        }
+      ],
       "sourceExamId": null,
-      "version": 1,
+      "version": 2,
       "createdAt": "2026-10-26T00:00:00.000Z",
-      "updatedAt": "2026-10-26T00:00:00.000Z",
+      "updatedAt": "2026-10-30T01:57:22.889Z",
       "occupationId": "occupation-17",
       "competencyIds": [],
       "areaIds": []
@@ -57,11 +660,537 @@
       "competencies": [],
       "documentUrl": "",
       "maxScore": 18.75,
-      "subcriteria": [],
+      "subcriteria": [
+        {
+          "id": "61211f81-06e2-4655-a285-c3aea6df9a41",
+          "code": "C1",
+          "title": "DB Creation",
+          "dayOfMarking": "2",
+          "cisSourceRow": 141,
+          "aspects": [
+            {
+              "id": "42c4b7d1-6a0e-4250-857f-64e813be46bf",
+              "description": "produce db-dump.sql with schema, FKs, seed data",
+              "method": "M",
+              "maxScore": 0.75,
+              "wsosSection": "1",
+              "considerations": "including the three fixed employee numbers below and sample events. Reduce 0.25 per missing or error (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 142,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "59371546-6bb6-444a-9fca-fcd4a6663508",
+              "description": "Model relationship is correctly reflected in database schema",
+              "method": "M",
+              "maxScore": 1.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. events and speakers is many-to-many; Room belongs to Event; Session belongs to Event; Session belongs to Room; speaker and session is many-to-many; Reservation belongs to Event.  (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 143,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "afefe766-1546-4166-84c8-74f80df510cc",
+              "description": "Event has three ticket types",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "Early bird, Normal, VIP",
+              "cisSourceRow": 144,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "dded6f32-9810-46cd-b71f-b7b8c36506cc",
+              "description": "Each event has its own ticket capacite and time zone setting",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "for each type (Early Bird, Normal, VIP), independent time zone. Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 145,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "96879163-49ce-4314-baec-03cf3a957afa",
+              "description": "Database structure is normalized",
+              "method": "J",
+              "maxScore": 0.75,
+              "wsosSection": "5",
+              "considerations": "",
+              "judgement": {
+                "0": "Not normalized, a lot of redundant data/fields",
+                "1": "Normalized with second normal form",
+                "2": "Normalized with third normal form (partial)",
+                "3": "Normalized with third normal form (full)"
+              },
+              "cisSourceRow": 146,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "579951aa-17e1-4c19-85ab-cc38d31f02cb",
+              "description": "expert_readme.txt is provided on how to get your project up and running, and where to access your project.",
+              "method": "J",
+              "maxScore": 0.25,
+              "wsosSection": "1",
+              "considerations": "",
+              "judgement": {
+                "0": "No documentation instructions are provided, or the file does not tell the Expert how to start the project or where to access it.",
+                "1": "The file is present, but it only answers one of the two requested parts — either how to start, or where to access — not both.",
+                "2": "The file is present and includes both parts requested: how to start, and where to access. One part is incomplete (for example a URL with no port, or a start command with no indication which folder to run it in), but the Expert can still reach the project with one obvious assumption.",
+                "3": "The file states how to start the project and where to open it, with enough detail that an Expert can follow the file once and reach the app (a start command or method, and a URL / port / file path). Extra but necessary information is included to make the Expert fully understand how to get the project up and running."
+              },
+              "cisSourceRow": 151,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "c4781e66-89f2-4bf4-aab5-15e02b365606",
+              "description": "Database column type is reasonable defined",
+              "method": "J",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "judgement": {
+                "0": "All columns use string type or text type",
+                "1": "Columns are basically in their related types. But numbers for int/float may not be optimized for operation.",
+                "2": "Columns are in their related types. For example, int, float, text, Boolean, JSON. And are in proper length.",
+                "3": "Columns are in their related types. And the length of each type matches the use case. Status columns are easy to understand and maintained. Including straightforward column value, or with comments."
+              },
+              "cisSourceRow": 156,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "e04c5db7-d5ac-4ed3-a58d-d978c3ef927b",
+          "code": "C2",
+          "title": "Authentication",
+          "dayOfMarking": "2",
+          "cisSourceRow": 161,
+          "aspects": [
+            {
+              "id": "7a0975d6-8741-4d3b-97ea-15ead18c8151",
+              "description": "Staff authenticate with an employee number only (no password). The value is digits-only (numeric barcode payload). Entering it simulates scanning an employee ID barcode on a staff badge.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "All staff have the same permissions (no role hierarchy). Check by Cypress c2-login-hooks.cy.js.",
+              "cisSourceRow": 162,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "06907256-fa17-4719-8982-c8acf376051b",
+              "description": "Top-level navigation after login: Events, Speakers, plus Logout (and Login when logged out). Rooms, sessions, ticket capacities, reservations, and the audit log for that event are managed under a selected event (not as top-level nav items).",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error.  (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 163,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "3123a24a-cc1e-49f6-8312-8d5863b536cf",
+              "description": "Accessing protected back-office routes without authentication must return HTTP 401 and redirect to the login page.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "Check by Cypress c2-unauth-backoffice.cy.js.",
+              "cisSourceRow": 164,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "6f97d307-a343-4761-bbfc-83ff07d9009f",
+              "description": "Three employee numbers are fixed for the competition and must be accepted as valid staff logins",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "2",
+              "considerations": "Can login with the provided employee numbers. Check by Cypress c2-valid-staff-codes.cy.js.",
+              "cisSourceRow": 165,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "f58b5ebc-d8ec-4594-8495-654a8399f017",
+              "description": "Invalid employee numbers show an error in the error-message container.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "Check by Cypress c2-invalid-code.cy.js.",
+              "cisSourceRow": 166,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "de75f972-e206-49d8-905b-911dbff52300",
+          "code": "C3",
+          "title": "Events and Rooms Management",
+          "dayOfMarking": "3",
+          "cisSourceRow": 167,
+          "aspects": [
+            {
+              "id": "94940b53-4eec-4b7e-b542-49c8eaf7c3f7",
+              "description": "Staff can create, list, view, update, and delete events.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 168,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e017be75-3b5d-4c24-a44a-bbd0f8ff9bca",
+              "description": "Event fields must include at least: name/title, and time zone (selectable or enterable IANA id). Other optional fields that a staff can input: location/city, description.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 169,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b011b7dd-4dc0-4d46-aed4-ad5dd17da32f",
+              "description": "From an event detail (or event hub) page, staff can manage that event’s Rooms, Sessions, ticket capacities, Reservations, and the event’s Audit log.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 170,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b76bddbf-9072-4a49-b113-015326101624",
+              "description": "Per-event ticket capacities: staff can edit the capacity integers for Early Bird, Normal, and VIP. Capacity cannot be set below the number of seats already reserved for that type (reject with clear error / HTTP 422).",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 171,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "a8ef68c6-e4d1-417d-9258-cb0acd010c33",
+              "description": "Staff can create, list, update, and delete rooms belonging to the selected event.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 172,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "cd5afbd1-cae2-40a7-b0fc-6394b2b61edf",
+              "description": "Room fields must include at least a name.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 173,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "fff53038-5fb4-4c18-9c3b-14555b45e3bc",
+              "description": "Deleting a room is allowed even if sessions still reference it. On delete, every session that used that room must have its room set to empty/null (session remains; staff can assign another room later).",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 174,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "fbf69d88-9347-401a-9776-626cdbfce658",
+          "code": "C4",
+          "title": "Speakers and Sessions Management",
+          "dayOfMarking": "3",
+          "cisSourceRow": 175,
+          "aspects": [
+            {
+              "id": "524ecc9d-f231-46e9-a357-81e79b98b7ca",
+              "description": "Staff can create, list, update, and delete speakers at the global Speakers area (top nav).",
+              "method": "M",
+              "maxScore": 0.75,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. Add speaker form accessible via /speakers/new. Deleting a speaker is allowed. After delete, any session_speaker (or equivalent) links for that speaker must be removed so sessions no longer reference the deleted speaker (session remains; speaker list on that session becomes empty or without that speaker). (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 176,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "bcf4e143-834e-4094-8243-b766d5c418f2",
+              "description": "Speaker profile includes biography and profile picture.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 177,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "5749fb73-fed9-438b-a363-02af24924d8b",
+              "description": "Profile picture: validate real MIME type (not extension only). Allowed: image/jpeg, image/png, image/webp. Max size 2 MB.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 178,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "87a04400-e2f6-431d-88d5-48f7d4194de6",
+              "description": "Staff can create, list, update, and delete sessions for the selected event.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. Each session belongs to exactly one event. A session may have a room of that event, or no room (null) after a room was deleted or if not yet assigned. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 179,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "00fc95c8-39a2-4abe-8892-5fa88bfcb5b6",
+              "description": "Session start/end: store UTC; staff enter/display in the parent event's timezone (see section 3). Absolute time must round-trip correctly (local → UTC → local).",
+              "method": "M",
+              "maxScore": 0.75,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 180,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ae2bb28c-2261-4362-bb87-91e98ea343d0",
+              "description": "End must be strictly after start (compare as absolute instants); otherwise HTTP 422 from server with a clear error.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 181,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "32ed2db4-2595-414b-9deb-1d552cf58690",
+              "description": "When a room is set, reject save if that room is already used by another session of the same event with an overlapping time range. Sessions without room association skip room-overlap checks.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 182,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "6f6152de-a56c-41ae-8e78-c1bf3a0c8a38",
+              "description": "Reject save if any assigned speaker is already assigned to another overlapping session. (Only handle speaker's time conflict within an event. Only check within one event. No need to handle or check any speaker's time conflict across multiple events)",
+              "method": "M",
+              "maxScore": 0.75,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 183,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "4dcd8be1-7188-4c64-85b6-642ca8fcdef7",
+              "description": "Staff can assign zero or more speakers to a session.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 184,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "3c3b3d63-21a4-4a39-8a66-fd2954554c69",
+          "code": "C5",
+          "title": "Reservations",
+          "dayOfMarking": "3",
+          "cisSourceRow": 185,
+          "aspects": [
+            {
+              "id": "385c202a-4b5d-4168-add5-d247c2d58ded",
+              "description": "Under an event, staff can list all reservations for that event.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 186,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "b65bca70-d19d-4e47-bc4b-6139d6e489aa",
+              "description": "Staff can create a reservation for a person: attendee full name, email, and quantities of tickets by type (how many Early Bird, how many Normal, how many VIP). At least one quantity must be ≥ 1. Default UI may preselect Normal quantity 1 and others 0.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Name and email are both required (non-empty after trim); email must be a valid format. Email uniqueness is not required.",
+              "cisSourceRow": 187,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "006bd1ba-ca3e-4248-9491-dc36291fde68",
+              "description": "Staff can update or cancel a reservation (name, email, and/or quantities per ticket type).",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. Cancelled seats must no longer count toward reserved totals so capacity is freed for future bookings.  (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 188,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "16a4ffc0-accb-4779-a320-3a6bc75be5e2",
+              "description": "Cancelled reservation cannot be re-active.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 189,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e8640463-cfda-4746-a6a8-3b920fa910a5",
+              "description": "Saving create/update must fail if any ticket type’s resulting reserved total (active only) would exceed that type’s capacity for the event (HTTP 422, clear message in error-message).",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 190,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "ea9b894a-e50d-4b6e-a784-5aedd57c1cc9",
+              "description": "On reservation forms/UI that offer ticket types, types with remaining 0 are disabled and marked \"Sold Out\" (data-testid=\"ticket-sold-out\" on sold-out options as applicable). When editing an existing reservation, quantities already held by that reservation may still be editable even if remaining appears 0 for new sales. But editing an existing reservation still cannot increase the quantities over capacities.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 191,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "e97bacd2-7e91-4d16-84cd-2773b5e48d07",
+              "description": "/api/events",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "A public read-only JSON API (no login) exposes remaining ticket capacity.",
+              "cisSourceRow": 192,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "2d380712-d1cb-4628-b997-4fe9ae67148f",
+              "description": "/api/events/:id",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per missing content (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 193,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "29d475dd-8d4c-483d-a431-dbfd083dd0a5",
+              "description": "Keys early_bird, normal, vip are required. remaining must equal capacity − reserved. Response Content-Type: application/json.",
+              "method": "M",
+              "maxScore": 0.5,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 194,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "45a5b06a-807f-442e-936f-25186abe4150",
+              "description": "This API does not require authentication (usable by a public kiosk or partner site). It is read-only; mutations stay in the staff UI.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "",
+              "cisSourceRow": 195,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        },
+        {
+          "id": "5907c58a-d6ad-4423-862f-79627cad7829",
+          "code": "C6",
+          "title": "Audit Logs",
+          "dayOfMarking": "2",
+          "cisSourceRow": 196,
+          "aspects": [
+            {
+              "id": "8f7b053d-bd5f-4781-94cd-c4626fe93281",
+              "description": "Write an audit log row for every reservation create, update, and cancel action. No other entity  requires audit logging.",
+              "method": "M",
+              "maxScore": 1,
+              "wsosSection": "5",
+              "considerations": "Reduce 0.25 per error. Each audit entry must store at least (operator_employee_number, action, entity type, entity id, event id, created_at).  For update: include before and after summary (or structured before_json / after_json) so reviewers can see what changed. For cancel: summary must show the cancelled name, email, and quantities released. (Enter number of errors)",
+              "measurementRequirement": "0",
+              "cisSourceRow": 197,
+              "areaIds": [],
+              "competencyIds": []
+            },
+            {
+              "id": "204497b8-d68c-4561-807a-2ae8348ddb13",
+              "description": "The audit log UI is under the event, listing only that event's reservation audit entries.",
+              "method": "M",
+              "maxScore": 0.25,
+              "wsosSection": "5",
+              "considerations": "Not a global top-level Logs nav item.",
+              "cisSourceRow": 198,
+              "areaIds": [],
+              "competencyIds": []
+            }
+          ]
+        }
+      ],
       "sourceExamId": null,
-      "version": 1,
+      "version": 2,
       "createdAt": "2026-10-26T00:00:00.000Z",
-      "updatedAt": "2026-10-26T00:00:00.000Z",
+      "updatedAt": "2026-10-30T01:37:44.337Z",
       "occupationId": "occupation-17",
       "competencyIds": [],
       "areaIds": []

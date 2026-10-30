@@ -56,6 +56,11 @@ function examValidation(exam,refs,{currentId}={}){const issues=[];
  }
  return [...new Set(issues)];
 }
+function executionChangeLocked(existing,candidate){
+ if(existing?.status!=='finalized')return false;
+ const fields=['scores','mode','notes','date','activityId','examId','competitorId'];
+ return fields.some(key=>JSON.stringify(existing[key]??null)!==JSON.stringify(candidate[key]??null));
+}
 function computeExecution(execution,exam){if(!exam)throw new Error('Prova não encontrada');const mode=execution.mode||'overall';const max=Number(exam.maxScore);
  const raw=Array.isArray(execution.scores)?execution.scores:[];
  let earned=null,coverage=0,breakdown=[]; const itemsByMode={
@@ -70,9 +75,29 @@ function computeExecution(execution,exam){if(!exam)throw new Error('Prova não e
  const items=itemsByMode[mode];if(mode!=='overall'&&!items.length)throw new Error('Não há critérios cadastrados para esse modo');
  const ids=new Set();let total=0;for(const s of raw){if(ids.has(s.id))throw new Error('Nota repetida');ids.add(s.id);
  const item=items.find(x=>x.id===s.id);if(!item)throw new Error('Aspecto/área/subcritério desconhecido: '+s.id);
- let score=s.score;if(mode==='aspects'&&item.method==='J'&&s.judgementLevel!=null){if(![0,1,2,3].includes(Number(s.judgementLevel)))throw new Error('Julgamento deve ser de 0 a 3');score=round(item.maxScore*Number(s.judgementLevel)/3)}
+ let score=s.score;
+ if(mode==='aspects'){
+  if(s.source!=null&&!['manual','xlsx'].includes(s.source))throw new Error('Origem de pontuação inválida: '+s.id);
+  if(s.achieved!=null&&item.method!=='M')throw new Error('Indicador de medição em aspecto Judgement: '+s.id);
+  if(s.achieved!=null&&typeof s.achieved!=='boolean')throw new Error('Indicador de medição inválido: '+s.id);
+  if(item.method==='J'&&s.votes!=null){
+   if(!Array.isArray(s.votes)||s.votes.length!==3||!s.votes.every(v=>Number.isInteger(v)&&v>=0&&v<=3))throw new Error('Julgamento exige três votos inteiros de 0 a 3: '+s.id);
+   score=round(item.maxScore*s.votes.reduce((n,v)=>n+v,0)/9);
+  } else if(item.method==='J'&&s.judgementLevel!=null){
+   if(![0,1,2,3].includes(Number(s.judgementLevel)))throw new Error('Julgamento deve ser de 0 a 3');
+   score=round(item.maxScore*Number(s.judgementLevel)/3);
+  }
+  if(item.method==='M'&&s.achieved===false&&score!==0)throw new Error('Medição não atingida deve valer zero: '+s.id);
+ }
  if(!finite(score)||score<0||score>item.maxScore+0.000001)throw new Error('Pontuação fora do limite: '+s.id);
- total+=score;breakdown.push({id:s.id,score:round(score),maxScore:item.maxScore,wsosSection:item.wsosSection, ...(s.judgementLevel!=null?{judgementLevel:Number(s.judgementLevel)}:{})});
+ total+=score;breakdown.push({id:s.id,score:round(score),maxScore:item.maxScore,wsosSection:item.wsosSection,
+  ...(s.judgementLevel!=null&&item.method==='J'&&s.votes==null?{judgementLevel:Number(s.judgementLevel)}:{}),
+  ...(mode==='aspects'?{
+   ...(s.achieved!=null?{achieved:s.achieved}:{}),
+   ...(s.votes!=null?{votes:[...s.votes]}:{}),
+   ...(s.source?{source:s.source}:{}),
+   ...(typeof s.note==='string'&&s.note.trim()?{note:s.note.trim().slice(0,500)}:{})
+  }: {})});
  }
  if(mode==='overall'&&!breakdown.length&&finite(execution.overallScore)){
  if(execution.overallScore<0||execution.overallScore>max)throw new Error('Nota geral fora do limite');
@@ -88,7 +113,11 @@ function computeExecution(execution,exam){if(!exam)throw new Error('Prova não e
  const map=new Map();for(const s of breakdown){if(!s.wsosSection)continue;const x=map.get(String(s.wsosSection))||{wsosSection:String(s.wsosSection),earned:0,maxScore:0,count:0};x.earned=round(x.earned+s.score);x.maxScore=round(x.maxScore+s.maxScore);x.count++;map.set(String(s.wsosSection),x)}
  for(const v of map.values()) wsos.push({...v,percentage:v.maxScore?round(v.earned/v.maxScore*100):0,partial:coverage<100});
  }
- return {mode,scores:breakdown,overallScore:earned,maxScore:max,coverage,complete:coverage===100&&structureComplete,wsosResults:wsos,percentage:earned!=null&&max?round(earned/max*100):null};
+ const complete=coverage===100&&structureComplete;
+ const status=execution.status||'draft';
+ if(!['draft','finalized'].includes(status))throw new Error('Situação da correção inválida');
+ if(status==='finalized'&&!complete)throw new Error('Finalize somente quando todos os aspectos estiverem avaliados e a pontuação do CIS estiver conciliada');
+ return {mode,scores:breakdown,overallScore:earned,maxScore:max,coverage,complete,status,wsosResults:wsos,percentage:earned!=null&&max?round(earned/max*100):null};
 }
 function validatePayload(resource,value,refs,{currentId}={}){const errors=[];const req=(key)=>{if(!String(value[key]||'').trim())errors.push(`${key} obrigatório`)};
  if(resource==='exams')return examValidation(value,refs,{currentId});
@@ -119,4 +148,4 @@ function validatePayload(resource,value,refs,{currentId}={}){const errors=[];con
  }
  return errors;
 }
-module.exports={dateStr,round,examAspects,examValidation,computeExecution,validatePayload};
+module.exports={dateStr,round,examAspects,examValidation,computeExecution,validatePayload,executionChangeLocked};

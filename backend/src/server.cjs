@@ -10,7 +10,7 @@
 const jsonServer = require('json-server');
 const { randomUUID } = require('node:crypto');
 const { RESOURCES, read, write, all } = require('./data.cjs');
-const { validatePayload, computeExecution } = require('./rules.cjs');
+const { validatePayload, computeExecution, executionChangeLocked } = require('./rules.cjs');
 const auth=require('./auth.cjs');
 
 const app = jsonServer.create();
@@ -182,6 +182,7 @@ function saveResource(resource, req, res, existing = null) {
   if (existing && resource === 'competitors' && existing.occupationId!==candidate.occupationId && (refs.executions.some(e=>e.competitorId===existing.id)||refs.technicalAssessments.some(e=>e.competitorId===existing.id)||refs.activities.some(e=>e.competitorId===existing.id)||refs.teams.some(t=>(t.competitorIds||[]).includes(existing.id)))) return fail(res,422,'Ocupação do competidor não pode mudar enquanto houver vínculos; mantenha o histórico');
   if (existing && resource === 'exams' && existing.occupationId!==candidate.occupationId && refs.executions.some(e=>e.examId===existing.id)) return fail(res,422,'Ocupação da prova não pode mudar após aplicações');
   if (resource === 'executions') {
+    if(executionChangeLocked(existing,candidate))return fail(res,409,'Correção finalizada. Reabra primeiro a execução antes de alterar notas ou dados.');
     const exam = refs.exams.find((x) => x.id === candidate.examId);
     if (existing && existing.examId !== candidate.examId) {
       return fail(res, 422, 'Não altere a prova vinculada à execução. Crie uma nova execução.');
@@ -189,6 +190,7 @@ function saveResource(resource, req, res, existing = null) {
     try {
       const snapshot = existing?.examSnapshot || {
         maxScore: exam.maxScore,
+        title: exam.title, module: exam.module,
         subcriteria: structuredClone(exam.subcriteria || []),
         areaIds: structuredClone(exam.areaIds || []),
         competencyIds: structuredClone(exam.competencyIds || [])
@@ -196,6 +198,12 @@ function saveResource(resource, req, res, existing = null) {
       Object.assign(candidate, computeExecution(candidate, snapshot));
       candidate.examSnapshot = snapshot;
       candidate.examVersion = existing?.examVersion || exam.version || 1;
+      candidate.finalizedAt = candidate.status==='finalized' ? (existing?.status==='finalized' ? existing.finalizedAt : new Date().toISOString()) : null;
+      candidate.finalizedBy = candidate.status==='finalized' ? (existing?.status==='finalized' ? existing.finalizedBy : req.user.id) : null;
+      candidate.createdBy = existing?.createdBy || req.user.id;
+      candidate.updatedBy = req.user.id;
+      const events=Array.isArray(existing?.statusEvents)?existing.statusEvents:[];
+      candidate.statusEvents=[...events,...(existing&&existing.status!==candidate.status?[{from:existing.status||'draft',to:candidate.status,at:new Date().toISOString(),by:req.user.id}]:[])];
     } catch (err) { return fail(res, 422, err.message); }
   }
 

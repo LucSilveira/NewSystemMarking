@@ -1,6 +1,6 @@
 {
   "name": "skill-training-backend",
-  "version": "0.9.3",
+  "version": "0.9.6",
   "private": true,
   "main": "src/server.cjs",
   "scripts": {
