@@ -1,3 +1,4 @@
+import SelectField from '../components/SelectField.jsx';
 import React,{useEffect,useState} from 'react';
 import {Plus,Pencil,Trash2,Save,X} from 'lucide-react';
 import {Modal,Button} from '../components/UI.jsx';
@@ -69,8 +70,8 @@ export default function SchoolSettingsModal({kind,db,onClose,onSave,onDelete}){
           {kind==='editions'&&<>
             <label className="school-settings-field">Edição<input required value={record.name||''} onChange={e=>set('name',e.target.value)}/></label>
             <label className="school-settings-field">Ano<input required type="number" min="2000" value={record.year??''} onChange={e=>set('year',Number(e.target.value))}/></label>
-            <label className="school-settings-field">Fase<select value={record.phase||'WorldSkills'} onChange={e=>set('phase',e.target.value)}>{PHASES.map(v=><option key={v}>{v}</option>)}</select></label>
-            <label className="school-settings-field">Ocupação<select required value={record.occupationId||''} onChange={e=>set('occupationId',e.target.value)}><option value="">Selecione</option>{db.occupations.map(o=><option key={o.id} value={o.id}>#{o.code} · {o.name}</option>)}</select></label>
+            <label className="school-settings-field">Fase<SelectField value={record.phase||'WorldSkills'} onChange={e=>set('phase',e.target.value)}>{PHASES.map(v=><option key={v}>{v}</option>)}</SelectField></label>
+            <label className="school-settings-field">Ocupação<SelectField required value={record.occupationId||''} onChange={e=>set('occupationId',e.target.value)}><option value="">Selecione</option>{db.occupations.map(o=><option key={o.id} value={o.id}>#{o.code} · {o.name}</option>)}</SelectField></label>
           </>}
           {kind==='evaluators'&&<>
             <label className="school-settings-field">Nome<input required value={record.name||''} onChange={e=>set('name',e.target.value)}/></label>
@@ -78,7 +79,7 @@ export default function SchoolSettingsModal({kind,db,onClose,onSave,onDelete}){
           </>}
           {kind==='competitors'&&<>
             <label className="school-settings-field">Nome<input required value={record.name||''} onChange={e=>set('name',e.target.value)}/></label>
-            <label className="school-settings-field">Ocupação<select required value={record.occupationId||''} onChange={e=>set('occupationId',e.target.value)}><option value="">Selecione</option>{db.occupations.map(o=><option key={o.id} value={o.id}>#{o.code} · {o.name}</option>)}</select></label>
+            <label className="school-settings-field">Ocupação<SelectField required value={record.occupationId||''} onChange={e=>set('occupationId',e.target.value)}><option value="">Selecione</option>{db.occupations.map(o=><option key={o.id} value={o.id}>#{o.code} · {o.name}</option>)}</SelectField></label>
             <label className="school-settings-field">URL da foto<input type="url" placeholder="https://..." value={record.photo?.startsWith('data:')?'':record.photo||''} onChange={e=>set('photo',e.target.value)}/></label>
             {record.photo&&<img className="school-settings-photo" alt="Prévia da foto" src={record.photo}/>}
             <label className="school-settings-field">Observações<textarea rows={2} value={record.notes||''} onChange={e=>set('notes',e.target.value)}/></label>

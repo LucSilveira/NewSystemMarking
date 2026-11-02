@@ -1,3 +1,4 @@
+import SelectField from './SelectField.jsx';
 import React, {useState} from 'react';
 import {FileSpreadsheet,AlertTriangle,CheckCircle2,Info} from 'lucide-react';
 import CisFileDropzone from './CisFileDropzone.jsx';
@@ -35,10 +36,10 @@ export default function CisInlineLoader({exam,hasExecutions,onApply}) {
      <div className="cis-inline-file-row">
        <div className="cis-inline-select">
          <label htmlFor="cis-inline-module">Bloco do CIS</label>
-         <select id="cis-inline-module" value={chosen} disabled={busy} onChange={e=>setChosen(e.target.value)}>
+         <SelectField id="cis-inline-module" value={chosen} disabled={busy} onChange={e=>setChosen(e.target.value)}>
            <option value="">Selecione o módulo...</option>
            {modules.map(m=><option key={m.module} value={m.module}>{m.module} · {m.title}</option>)}
-         </select>
+         </SelectField>
        </div>
        <aside className={`cis-inline-review${module?'':' is-empty'}`} aria-label="Resumo informativo do módulo">
          {module?<>

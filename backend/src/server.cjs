@@ -12,6 +12,10 @@ const { randomUUID } = require('node:crypto');
 const { RESOURCES, read, write, all } = require('./data.cjs');
 const { validatePayload, computeExecution, executionChangeLocked } = require('./rules.cjs');
 const auth=require('./auth.cjs');
+const {queryCollection}=require('./queries.cjs');
+const {reportCompetencies}=require('./competency-report.cjs');
+const {buildDashboardReport}=require('./dashboard-report.cjs');
+const {buildOverviewReport}=require('./overview-report.cjs');
 
 const app = jsonServer.create();
 app.disable('x-powered-by');
@@ -73,6 +77,7 @@ app.post('/api/admin/users',safe((req,res)=>{
   if(!req.body?.password)return fail(res,422,'Senha obrigatória');
   try {
     const occupationIds=req.body.occupationIds||[];
+    if(req.body.role==='evaluator'&&!occupationIds.length)return fail(res,422,'O avaliador precisa estar vinculado a pelo menos uma ocupação');
     if(occupationIds.some(id=>!read('occupations').some(x=>x.id===id)))return fail(res,422,'Ocupação inexistente');
     return res.status(201).json(auth.createUser(req.body));
   }catch(err){return fail(res,422,err.message)}
@@ -82,6 +87,10 @@ app.put('/api/admin/users/:id',safe((req,res)=>{
   try {
     const ids=req.body?.occupationIds;
     if(ids&&ids.some(id=>!read('occupations').some(x=>x.id===id)))return fail(res,422,'Ocupação inexistente');
+    const existing=auth.getUsers().find(u=>u.id===req.params.id);
+    const nextRole=req.body?.role||existing?.role;
+    const nextOccupations=ids||existing?.occupationIds||[];
+    if(nextRole==='evaluator'&&!nextOccupations.length)return fail(res,422,'O avaliador precisa estar vinculado a pelo menos uma ocupação');
     return res.json(auth.updateUser(req.params.id,req.body));
   }catch(err){return fail(res,422,err.message)}
 }));
@@ -94,26 +103,34 @@ app.post('/api/auth/change-password',safe((req,res)=>{
 }));
 const visibleDB=(user)=>auth.scopedData(all(),user);
 
+// Resposta única para a versão atual do front. Ainda não é paginada: transição.
+app.get('/api/bootstrap',safe((req,res)=>res.json(visibleDB(req.user))));
+// Novo contrato paginado: ideal para a migração progressiva de catálogos e históricos.
+app.get('/api/search/:resource',safe((req,res)=>{
+ if(!RESOURCES.includes(req.params.resource))return fail(res,404,'Coleção não encontrada');
+ const db=all();
+ return res.json(queryCollection(req.params.resource,db,req.user,req.query,auth.visible));
+}));
+// Indicadores agregados por período, competidor e ocupação; nenhuma nota é calculada no cliente.
+app.get('/api/reports/dashboard',safe((req,res)=>{
+ const db=visibleDB(req.user);
+ try{return res.json(buildDashboardReport(db,req.query));}
+ catch(err){return fail(res,422,err.message)}
+}));
+app.get('/api/reports/competencies/:competitorId',safe((req,res)=>{
+ const db=visibleDB(req.user);
+ if(!db.competitors.some(c=>c.id===req.params.competitorId))return fail(res,404,'Competidor não encontrado ou não autorizado');
+ return res.json({competitorId:req.params.competitorId,results:reportCompetencies(db,req.params.competitorId)});
+}));
+
 app.get('/api', (_req, res) => res.json({ status: 'ok', endpoints: ['/api/health', ...RESOURCES.map((r) => `/api/${r}`)] }));
 
 
-app.get('/api/reports/overview', safe((_req, res) => {
-  const db = visibleDB(_req.user);
-  const latest = [...db.executions].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 12);
-  const valid = db.executions.filter((e) => e.overallScore != null && e.maxScore > 0);
-  const weightedMax = valid.reduce((sum, e) => sum + e.maxScore, 0);
-  const overall = weightedMax ? Math.round(valid.reduce((sum, e) => sum + e.overallScore, 0) / weightedMax * 10000) / 100 : null;
-  const wsosResults = {};
-  for (const e of db.executions) {
-    for (const s of e.wsosResults || []) {
-      const k = s.wsosSection;
-      wsosResults[k] ??= { earned: 0, maxScore: 0, entries: 0 };
-      wsosResults[k].earned += s.earned;
-      wsosResults[k].maxScore += s.maxScore;
-      wsosResults[k].entries++;
-    }
-  }
-  res.json({ counts: Object.fromEntries(RESOURCES.map((k) => [k, db[k].length])), overall, latest, wsosResults });
+app.get('/api/reports/overview',safe((req,res)=>{
+  // Os filtros e a agregação são responsabilidade da API, não do React.
+  const db=visibleDB(req.user);
+  try{return res.json(buildOverviewReport(db,{occupationId:req.query.occupationId,competitorId:req.query.competitorId||'all'}))}
+  catch(err){return fail(res,422,err.message)}
 }));
 
 app.get('/api/reports/competitor/:id', safe((req, res) => {
@@ -168,6 +185,7 @@ function saveResource(resource, req, res, existing = null) {
   const rows = read(resource);
   const isNew = existing === null;
   const candidate = { ...(existing || {}), ...input };
+  if(isNew && resource==='competitors')candidate.active=true;
   candidate.id = existing?.id || input.id || randomUUID();
   if (typeof candidate.id !== 'string' || !candidate.id.trim()) return fail(res, 422, 'ID inválido');
   if (isNew && rows.some((r) => String(r.id) === String(candidate.id))) return fail(res, 409, 'ID já cadastrado');
@@ -179,6 +197,7 @@ function saveResource(resource, req, res, existing = null) {
   const issues = validatePayload(resource, candidate, refs, { currentId: existing?.id });
   if (issues.length) return fail(res, 422, issues.join(' | '), { issues });
 
+  if (existing && resource === 'editions' && existing.occupationId!==candidate.occupationId && refs.exams.some(ex=>ex.editionId===existing.id)) return fail(res,422,'Edição usada em provas não pode ser movida para outra ocupação');
   if (existing && resource === 'competitors' && existing.occupationId!==candidate.occupationId && (refs.executions.some(e=>e.competitorId===existing.id)||refs.technicalAssessments.some(e=>e.competitorId===existing.id)||refs.activities.some(e=>e.competitorId===existing.id)||refs.teams.some(t=>(t.competitorIds||[]).includes(existing.id)))) return fail(res,422,'Ocupação do competidor não pode mudar enquanto houver vínculos; mantenha o histórico');
   if (existing && resource === 'exams' && existing.occupationId!==candidate.occupationId && refs.executions.some(e=>e.examId===existing.id)) return fail(res,422,'Ocupação da prova não pode mudar após aplicações');
   if (resource === 'executions') {
@@ -238,6 +257,7 @@ function deleteResource(resource, req, res) {
   if (!existing) return fail(res, 404, 'Registro não encontrado');
   if(!auth.canMutate(req.user,resource,existing,all()))return fail(res,403,'Sem permissão nesta ocupação');
   if (resource === 'examTypes' && read('exams').some(ex => ex.typeKey===existing.key && (!existing.occupationId || ex.occupationId===existing.occupationId))) return fail(res,409,'Tipo de prova usado por prova cadastrada');
+  if (resource === 'occupations' && auth.getUsers().some(u=>(u.occupationIds||[]).includes(id)))return fail(res,409,'Ocupação vinculada a conta de avaliador');
   if (resource === 'competitors' && read('teams').some(t => (t.competitorIds || []).includes(id))) return fail(res, 409, 'Competidor vinculado a uma equipe');
   if (resource === 'occupations' && read('evaluators').some(e=>(e.occupationIds||[]).includes(id))) return fail(res,409,'Ocupação vinculada a avaliador');
   if (resource === 'competencies' && read('exams').some(ex => (ex.competencyIds||[]).includes(id) ||

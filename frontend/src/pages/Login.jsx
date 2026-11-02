@@ -16,7 +16,7 @@ export default function Login({onLogin}){
   <main className="stm-login-panel"><div className="stm-login-form-wrap">
    <div className="stm-login-brand"><div className="stm-login-brand-icon">STM</div><div><strong>Skill Training Manager</strong><small>TRAINING & PERFORMANCE</small></div></div>
    <div className="stm-login-heading"><div className="stm-login-eyebrow"><span/> ACESSO RESTRITO</div><h1>Bem-vindo de volta.</h1><p>Entre com suas credenciais para acessar seu espaço de treinamento.</p></div>
-   {!configured&&<div className="stm-login-warning">O administrador ainda não foi configurado. No terminal do projeto, execute <code>npm run auth:init-admin</code>.</div>}
+   {!configured&&<div className="stm-login-warning">A conta administrativa não foi encontrada. Verifique a base de usuários da instalação.</div>}
    <form className="stm-login-form" onSubmit={submit}>
     <label>Usuário ou e-mail institucional<div className="stm-login-control"><UserRound size={18}/><input required autoComplete="username" placeholder="Nome de usuário ou e-mail" value={username} onChange={e=>setUsername(e.target.value)}/></div></label>
     <label>Senha<div className="stm-login-control"><LockKeyhole size={18}/><input required autoComplete="current-password" type={show?'text':'password'} placeholder="Sua senha" value={password} onChange={e=>setPassword(e.target.value)}/><button className="stm-login-eye" type="button" title={show?'Ocultar senha':'Mostrar senha'} onClick={()=>setShow(v=>!v)}>{show?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></label>

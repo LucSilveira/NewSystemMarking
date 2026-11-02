@@ -1,6 +1,7 @@
 // A URL e a unica fonte de verdade do contexto de ocupacao.
 export const ROUTES = Object.freeze({
   dashboard: {slug:'painel', label:'Visão geral'},
+  analytics: {slug:'dashboard', label:'Dashboard'},
   exams: {slug:'provas', label:'Provas'},
   executions: {slug:'execucoes', label:'Execuções'},
   activities: {slug:'atividades', label:'Atividades'},

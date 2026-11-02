@@ -1,3 +1,4 @@
+import SelectField from '../components/SelectField.jsx';
 import React, {useEffect, useMemo, useState} from 'react';
 import {ArrowLeft, Plus, Pencil, Copy, Trash2, Link2, Eye, Save, ChevronDown, Check, Layers3, ListChecks, FileSpreadsheet, GripVertical, X, MousePointer2, SlidersHorizontal, RotateCcw} from 'lucide-react';
 import {Button, Field, Badge, PageTitle, Empty, SearchBar, LineEditor} from '../components/UI.jsx';
@@ -34,9 +35,9 @@ const countryName = exam => exam.referenceCountry?.trim() || 'País não informa
 const scoreSum = aspects => arr(aspects).reduce((sum, a) => sum + Number(a.maxScore || 0), 0);
 const TABS = [
   {id:'details', label:'Detalhes da prova'},
-  {id:'technical', label:'Fatores técnicos'},
+  {id:'technical', label:'Detalhes técnicos'},
   {id:'cis', label:'CIS mapeado'},
-  {id:'analysis', label:'Análise técnica'}
+  {id:'analysis', label:'Mapeamento de competências'}
 ];
 
 function newExam(db) {
@@ -71,16 +72,22 @@ function MultiCheck({items, selected=[], onToggle, empty}) {
 }
 
 // Grupos independentes: nenhuma seleção cria rótulos <label> aninhados.
-function MappingGroup({title,subtitle,items,selected=[],onToggle,empty,kind='areas'}) {
+function MappingGroup({title,subtitle,items,selected=[],onToggle,empty,kind='areas',extraItems=[],extraLabel,headerAction,countLabel}) {
   const isAreas=kind==='areas';
   const Icon=isAreas?Layers3:ListChecks;
   return <fieldset className={`exam-mapping-group exam-mapping-group--${kind}`}>
     <legend><Icon size={15} aria-hidden="true"/> {title}</legend>
     <div className="exam-mapping-group-meta">
       <span>{subtitle}</span>
-      <span className="exam-mapping-counter">{selected.length} de {items.length} selecionada{selected.length===1?'':'s'}</span>
+      <span className="exam-mapping-counter">{countLabel||`${selected.length} de ${items.length} selecionada${selected.length===1?'':'s'}`}</span>
     </div>
+    {headerAction&&<div className="exam-mapping-group-action">{headerAction}</div>}
     <MultiCheck items={items} selected={selected} onToggle={onToggle} empty={empty}/>
+    {extraItems.length>0&&<div className="exam-mapping-extra">
+      <strong>{extraLabel||'Vínculos anteriores fora do filtro'}</strong>
+      <p>Estas competências já estão nesta prova e foram mantidas. Desmarque as que não devem permanecer vinculadas.</p>
+      <MultiCheck items={extraItems} selected={selected} onToggle={onToggle}/>
+    </div>}
   </fieldset>;
 }
 
@@ -150,7 +157,7 @@ function ExamView({exam,db,onBack,onEdit,onAdapt,onDelete}) {
         {!!aspects.length&&Math.abs(total-Number(exam.maxScore))>0.00001&&<p className="note warning">Os aspectos somam {points(total)} pontos, mas a prova possui {points(exam.maxScore)} pontos. Confira o cadastro.</p>}
       </div>}
       {tab==='analysis'&&<div className="exam-section">
-        <div className="exam-section-summary"><div><h3>Correlações técnicas dos aspectos</h3><p>WSOS oficial preservado; áreas e competências são classificações independentes.</p></div><div className="mapping-stats"><span>{mapped}/{aspects.length} aspectos com relação</span></div></div>
+        <div className="exam-section-summary"><div><h3>Mapeamento dos aspectos CIS</h3><p>WSOS oficial preservado; áreas e competências são classificações independentes.</p></div><div className="mapping-stats"><span>{mapped}/{aspects.length} aspectos com relação</span></div></div>
         {!aspects.length&&<Empty title="Nenhum aspecto disponível" subtitle="Cadastre os aspectos na aba CIS para mapear suas relações."/>}
         <div className="exam-analysis-groups">
         {arr(exam.subcriteria).map(s=><Expandable className="exam-accordion exam-analysis-group" key={s.id} initiallyOpen><summary><span><strong>{s.code} · {s.title||'Subcritério'}</strong><small className="exam-subcriterion-meta"><span>{arr(s.aspects).length} aspectos</span><span>{points(scoreSum(s.aspects))} pts</span></small></span><ChevronDown size={18} className="accordion-chevron" aria-hidden="true"/></summary>
@@ -181,11 +188,26 @@ function ExamEditor({source,db,onClose,onSave}) {
   const [mapMessage,setMapMessage]=useState('');
   const [areaSearch,setAreaSearch]=useState('');
   const [competencySearch,setCompetencySearch]=useState('');
+  const [showAllCompetencies,setShowAllCompetencies]=useState(false);
   const set=(field,value)=>setForm(f=>({...f,[field]:value}));
   const allAreas=db.occupationAreas.filter(a=>a.occupationId===form.occupationId);
   const allComps=db.competencies.filter(c=>!c.occupationId||c.occupationId===form.occupationId);
-  const areas=allAreas.filter(a=>arr(form.areaIds).includes(a.id));
+  const selectedAreaIds=new Set(arr(form.areaIds));
+  // União das competências de todas as áreas escolhidas; uma competência pode pertencer a várias.
+  const relatedComps=allComps.filter(c=>arr(c.areaIds).some(id=>selectedAreaIds.has(id)));
+  const relatedIds=new Set(relatedComps.map(c=>c.id));
+  // Nunca esconder silenciosamente vínculos antigos ao mudar as áreas da prova.
+  const outOfAreaSelected=allComps.filter(c=>arr(form.competencyIds).includes(c.id)&&!relatedIds.has(c.id));
+  const displayedComps=showAllCompetencies?allComps:relatedComps;
+  const areas=allAreas.filter(a=>selectedAreaIds.has(a.id));
   const competencies=allComps.filter(c=>arr(form.competencyIds).includes(c.id));
+  // Detalhes técnicos é a única fonte para o escopo do mapeamento.
+  // A biblioteca não reabre os cadastros completos da ocupação.
+  const scopedAreas=areas;
+  const scopedCompetencies=competencies;
+  const mappedOutsideScope=arr(form.subcriteria).flatMap(s=>arr(s.aspects)).reduce((count,a)=>
+    count+arr(a.areaIds).filter(id=>!selectedAreaIds.has(id)).length+
+    aspectCompetencyIds(a).filter(id=>!arr(form.competencyIds).includes(id)).length,0);
   const wsos=db.wsos.filter(w=>!w.occupationId||w.occupationId===form.occupationId);
   const allAspects=aspectList(form);
   const n=allAspects.length;
@@ -193,11 +215,32 @@ function ExamEditor({source,db,onClose,onSave}) {
   const linked=allAspects.filter(a=>arr(a.areaIds).length||aspectCompetencyIds(a).length).length;
   const updateSub=(i,edit)=>setForm(f=>({...f,subcriteria:arr(f.subcriteria).map((s,k)=>k===i?{...s,...edit}:s)}));
   const updateAspect=(i,j,edit)=>setForm(f=>({...f,subcriteria:arr(f.subcriteria).map((s,k)=>k===i?{...s,aspects:arr(s.aspects).map((a,l)=>l===j?{...a,...edit}:a)}:s)}));
-    const changeSelected=(field,id,checked)=>setForm(f=>{
-    const selection=toggle(arr(f[field]),id,checked);
-    const subcriteria=checked?f.subcriteria:arr(f.subcriteria).map(s=>({...s,aspects:arr(s.aspects).map(a=>field==='areaIds'?{...a,areaIds:arr(a.areaIds).filter(x=>x!==id)}:{...a,competencyIds:aspectCompetencyIds(a).filter(x=>x!==id)})}));
-    return {...f,[field]:selection,subcriteria};
-  });
+  const changeSelected=(field,id,checked)=>{
+    if(!checked){
+      const affected=allAspects.filter(a=>field==='areaIds'?arr(a.areaIds).includes(id):aspectCompetencyIds(a).includes(id)).length;
+      if(affected&&!window.confirm(`Este item está vinculado a ${affected} aspecto${affected===1?'':'s'} CIS. Remover do escopo também removerá estes vínculos. Deseja continuar?`))return;
+      const kind=field==='areaIds'?'area':'competency';
+      setSourceSelection(previous=>{
+        if(previous.kind!==kind)return previous;
+        const ids=previous.ids.filter(value=>value!==id);
+        return {kind:ids.length?kind:null,ids};
+      });
+      setPickedRelation(previous=>{
+        if(previous?.kind!==kind)return previous;
+        const ids=arr(previous.ids).filter(value=>value!==id);
+        return ids.length?{...previous,ids}:null;
+      });
+    }
+    setForm(previous=>{
+      const selection=toggle(arr(previous[field]),id,checked);
+      const subcriteria=checked?previous.subcriteria:arr(previous.subcriteria).map(sub=>({...sub,
+        aspects:arr(sub.aspects).map(aspect=>field==='areaIds'
+          ? {...aspect,areaIds:arr(aspect.areaIds).filter(value=>value!==id)}
+          : {...aspect,competencyIds:aspectCompetencyIds(aspect).filter(value=>value!==id)})
+      }));
+      return {...previous,[field]:selection,subcriteria};
+    });
+  };
   const addSub=()=>set('subcriteria',[...arr(form.subcriteria),{id:uid(),code:`${form.module?.replace(/^M/,'')||'A'}${arr(form.subcriteria).length+1}`,title:'',aspects:[]}]);
   const addAspect=i=>updateSub(i,{aspects:[...arr(form.subcriteria[i].aspects),{id:uid(),description:'',method:'M',maxScore:0,wsosSection:'',considerations:'',judgement:{0:'',1:'',2:'',3:''},areaIds:[],competencyIds:[]}]});
   const targetKeys=arr(form.subcriteria).flatMap(sub=>arr(sub.aspects).map(a=>aspectKey(sub.id,a.id)));
@@ -205,12 +248,15 @@ function ExamEditor({source,db,onClose,onSave}) {
   const selectTarget=(key,checked)=>setSelectedTargets(previous=>checked?[...new Set([...previous,key])]:previous.filter(k=>k!==key));
   const applyRelation=(relation,targetKey)=>{
     if(!relation||!['area','competency'].includes(relation.kind))return;
-    const available=(relation.kind==='area'?areas:competencies);
+    const available=(relation.kind==='area'?scopedAreas:scopedCompetencies);
     const validIds=new Set(available.map(item=>item.id));
     const ids=[...new Set(arr(relation.ids).length?relation.ids:relation.id?[relation.id]:[])].filter(id=>validIds.has(id));
     if(!ids.length)return;
     const keys=dropTargets(targetKey,targetsSelected);
-    setForm(previous=>({...previous,subcriteria:updateAspectRelationshipsBatch(previous.subcriteria,keys,{kind:relation.kind,ids})}));
+    // Mapeamento não altera o escopo geral da prova: apenas os aspectos CIS.
+    setForm(previous=>({...previous,
+      subcriteria:updateAspectRelationshipsBatch(previous.subcriteria,keys,{kind:relation.kind,ids})
+    }));
     setMapMessage(`${ids.length} ${relation.kind==='area'?'área':'competência'}${ids.length===1?'':'s'} vinculada${ids.length===1?'':'s'} a ${keys.length} aspecto${keys.length===1?'':'s'}. Salve a prova para persistir.`);
     setPickedRelation(null);
     setHoverTarget(null);
@@ -271,19 +317,26 @@ function ExamEditor({source,db,onClose,onSave}) {
           <Field label="Título da prova"><input value={form.title} onChange={e=>set('title',e.target.value)} placeholder="Ex.: Mobile Conference"/></Field>
           <Field label="Módulo"><input value={form.module||''} onChange={e=>set('module',e.target.value)} placeholder="Ex.: MB"/></Field>
           <Field label="Pontuação máxima"><input type="number" min="0" step="any" value={form.maxScore} onChange={e=>set('maxScore',e.target.value)}/></Field>
-          <Field label="Edição de referência"><select value={form.editionId||''} onChange={e=>set('editionId',e.target.value)}><option value="">Sem edição</option>{db.editions.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>
+          <Field label="Edição de referência"><SelectField value={form.editionId||''} onChange={e=>set('editionId',e.target.value)}><option value="">Sem edição</option>{db.editions.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</SelectField></Field>
           <Field label="País de referência"><input value={form.referenceCountry||''} onChange={e=>set('referenceCountry',e.target.value)} placeholder="Ex.: China"/></Field>
-          <Field label="Tipo de prova"><select value={form.typeKey} onChange={e=>set('typeKey',e.target.value)}>{db.examTypes.map(t=><option key={t.id} value={t.key}>{t.name}</option>)}</select></Field>
+          <Field label="Tipo de prova"><SelectField value={form.typeKey} onChange={e=>set('typeKey',e.target.value)}>{db.examTypes.map(t=><option key={t.id} value={t.key}>{t.name}</option>)}</SelectField></Field>
           <div className="exam-detail-full"><Field label="Descrição"><textarea rows={3} value={form.description||''} onChange={e=>set('description',e.target.value)} placeholder="Descrição geral da prova"/></Field></div>
           <div className="exam-detail-full"><Field label="Documento da prova (link de referência)"><input type="url" value={form.documentUrl||''} onChange={e=>set('documentUrl',e.target.value)} placeholder="https://..."/><small className="exam-field-warning">Nesta versão sem login, não grave links confidenciais.</small></Field></div>
-          <div className="exam-detail-full"><Field label="Prova original (se adaptada)"><select value={form.sourceExamId||''} onChange={e=>set('sourceExamId',e.target.value||null)}><option value="">Sem prova de origem</option>{db.exams.filter(e=>e.id!==form.id).map(e=><option key={e.id} value={e.id}>{e.module} · {e.title}</option>)}</select></Field></div>
+          <div className="exam-detail-full"><Field label="Prova original (se adaptada)"><SelectField value={form.sourceExamId||''} onChange={e=>set('sourceExamId',e.target.value||null)}><option value="">Sem prova de origem</option>{db.exams.filter(e=>e.id!==form.id).map(e=><option key={e.id} value={e.id}>{e.module} · {e.title}</option>)}</SelectField></Field></div>
         </div>}
         {tab==='technical'&&<div className="exam-section form-grid exam-fields exam-technical-fields">
           <LineEditor label="Desafios técnicos (um por linha)" value={arr(form.technicalChallenges)} onChange={v=>set('technicalChallenges',v)}/>
           <Field label="Detalhes técnicos"><textarea rows={4} value={form.technicalDetails||''} onChange={e=>set('technicalDetails',e.target.value)}/></Field>
-          <div className="mapping-intro"><strong>Escopo técnico da prova</strong><p>Escolha as áreas e as competências trabalhadas. O relacionamento com cada aspecto será definido na aba Análise técnica.</p></div>
-          <MappingGroup kind="areas" title="Áreas da ocupação" subtitle="Áreas abordadas nesta prova" items={allAreas} selected={arr(form.areaIds)} onToggle={(id,checked)=>changeSelected('areaIds',id,checked)} empty="Cadastre áreas nos Cadastros de apoio."/>
-          <MappingGroup kind="competencies" title="Competências técnicas relacionadas" subtitle="Competências desenvolvidas pela prova" items={allComps} selected={arr(form.competencyIds)} onToggle={(id,checked)=>changeSelected('competencyIds',id,checked)} empty="Cadastre competências na página Competências."/>
+          <div className="mapping-intro"><strong>Escopo técnico da prova</strong><p>Escolha as áreas e as competências trabalhadas. Somente estes itens estarão disponíveis na aba Mapeamento de competências para relacionar aos aspectos CIS.</p></div>
+          <MappingGroup kind="areas" title="Áreas da ocupação" subtitle="Áreas abordadas nesta prova" items={allAreas} selected={arr(form.areaIds)} onToggle={(id,checked)=>{changeSelected('areaIds',id,checked);setShowAllCompetencies(false)}} empty="Cadastre áreas em Configurações da modalidade."/>
+          <MappingGroup kind="competencies" title="Competências técnicas relacionadas"
+            subtitle={showAllCompetencies?'Biblioteca completa da ocupação':areas.length?`Competências vinculadas ${areas.length===1?'à área selecionada':'às áreas selecionadas'}`:'Selecione as áreas ao lado para encontrar suas competências'}
+            items={displayedComps} selected={arr(form.competencyIds)} onToggle={(id,checked)=>changeSelected('competencyIds',id,checked)}
+            countLabel={`${arr(form.competencyIds).length} selecionada${arr(form.competencyIds).length===1?'':'s'} · ${displayedComps.length} ${displayedComps.length===1?'disponível':'disponíveis'}`}
+            headerAction={allComps.length>displayedComps.length||showAllCompetencies?<button type="button" className="exam-mapping-show-all" onClick={()=>setShowAllCompetencies(v=>!v)}>{showAllCompetencies?'Mostrar apenas relacionadas':`Mostrar todas as competências (${allComps.length})`}</button>:null}
+            extraItems={showAllCompetencies?[]:outOfAreaSelected}
+            extraLabel="Já vinculadas fora das áreas selecionadas"
+            empty={!allComps.length?'Cadastre competências na página Competências.':!areas.length?'Selecione uma ou mais áreas da ocupação.':`Nenhuma competência vinculada às áreas selecionadas. Confira o cadastro das competências.`}/>
         </div>}
         {tab==='cis'&&<div className="exam-section exam-cis-editor">
           <CisInlineLoader exam={form} hasExecutions={db.executions.some(e=>e.examId===form.id)} onApply={(subcriteria,module,syncScore)=>setForm(f=>({...f,subcriteria,...(syncScore?{maxScore:module.totalScore}:{})}))}/>
@@ -300,7 +353,7 @@ function ExamEditor({source,db,onClose,onSave}) {
                 <ChevronDown size={17} className="accordion-chevron" aria-hidden="true"/>
               </summary><div className="exam-aspect-fields">
                 <Field label="Descrição"><textarea rows={2} value={a.description||''} onChange={e=>updateAspect(i,j,{description:e.target.value})}/></Field>
-                <div className="grid-three"><Field label="Método"><select value={a.method||'M'} onChange={e=>updateAspect(i,j,{method:e.target.value})}><option value="M">Measurement</option><option value="J">Judgement</option></select></Field><Field label="Pontuação máxima"><input type="number" min="0" step="any" value={a.maxScore} onChange={e=>updateAspect(i,j,{maxScore:Number(e.target.value)})}/></Field><Field label="WSOS"><select value={a.wsosSection||''} onChange={e=>updateAspect(i,j,{wsosSection:e.target.value})}><option value="">Não classificado</option>{wsos.map(w=><option key={w.id} value={w.code}>{w.code} · {w.name}</option>)}</select></Field></div>
+                <div className="grid-three"><Field label="Método"><SelectField value={a.method||'M'} onChange={e=>updateAspect(i,j,{method:e.target.value})}><option value="M">Measurement</option><option value="J">Judgement</option></SelectField></Field><Field label="Pontuação máxima"><input type="number" min="0" step="any" value={a.maxScore} onChange={e=>updateAspect(i,j,{maxScore:Number(e.target.value)})}/></Field><Field label="WSOS"><SelectField value={a.wsosSection||''} onChange={e=>updateAspect(i,j,{wsosSection:e.target.value})}><option value="">Não classificado</option>{wsos.map(w=><option key={w.id} value={w.code}>{w.code} · {w.name}</option>)}</SelectField></Field></div>
                 <Field label="Considerações de correção"><textarea rows={2} value={a.considerations||''} onChange={e=>updateAspect(i,j,{considerations:e.target.value})}/></Field>
                 {a.method==='J'&&<div className="judge-grid">{[0,1,2,3].map(level=><Field key={level} label={`Julgamento ${level}`}><input value={a.judgement?.[level]||''} onChange={e=>updateAspect(i,j,{judgement:{...a.judgement,[level]:e.target.value}})}/></Field>)}</div>}
                 <div className="right"><Button variant="danger-ghost" onClick={()=>{if(window.confirm('Remover este aspecto?'))updateSub(i,{aspects:arr(s.aspects).filter((_,k)=>k!==j)})}}>Remover aspecto</Button></div>
@@ -311,7 +364,14 @@ function ExamEditor({source,db,onClose,onSave}) {
           {!!n&&Math.abs(total-Number(form.maxScore))>0.00001&&<p className="note warning">Soma dos aspectos ({points(total)}) diferente da pontuação máxima da prova ({points(form.maxScore)}).</p>}
         </div>}
         {tab==='analysis'&&<div className="exam-section exam-analysis-editor">
-          <div className="exam-section-summary"><div><h3>Análise técnica e correlação</h3><p>Selecione várias áreas ou competências com Shift ou + e arraste o conjunto. Você também pode marcar vários aspectos à esquerda para vincular todos de uma vez.</p></div><div className="mapping-stats"><span>{linked}/{n} relacionados</span></div></div>
+          <div className="exam-section-summary"><div><h3>Mapeamento de competências</h3><p>Associe aos aspectos CIS somente as áreas e competências definidas em Detalhes técnicos. Selecione vários itens com Shift ou + para aplicar em vários aspectos de uma vez.</p></div><div className="mapping-stats"><span>{linked}/{n} relacionados</span></div></div>
+          <div className="technical-mapper-scope" role="status">
+            <span><Layers3 size={15}/> {scopedAreas.length} área{scopedAreas.length===1?'':'s'} definida{scopedAreas.length===1?'':'s'}</span>
+            <span><ListChecks size={15}/> {scopedCompetencies.length} competência{scopedCompetencies.length===1?'':'s'} selecionada{scopedCompetencies.length===1?'':'s'}</span>
+            <button type="button" onClick={()=>{setTab('technical');setPickedRelation(null);setSourceSelection({kind:null,ids:[]})}}>Editar escopo em Detalhes técnicos</button>
+          </div>
+          {(!scopedAreas.length||!scopedCompetencies.length)&&<p className="technical-mapper-scope-warning">{!scopedAreas.length&&!scopedCompetencies.length?'Selecione as áreas e competências na aba Detalhes técnicos antes de mapear.':!scopedAreas.length?'Selecione as áreas trabalhadas na aba Detalhes técnicos.':'Selecione as competências trabalhadas na aba Detalhes técnicos.'} Os vínculos já cadastrados nos aspectos são preservados.</p>}
+          {mappedOutsideScope>0&&<p className="technical-mapper-scope-warning">{mappedOutsideScope} vínculo{mappedOutsideScope===1?'':'s'} anterior{mappedOutsideScope===1?'':'es'} fora do escopo atual. Continue vendo essas relações nos aspectos; revise a seleção em Detalhes técnicos antes de salvar alterações.</p>}
           {!n&&<Empty title="Nenhum aspecto para relacionar" subtitle="Cadastre os aspectos na aba CIS antes de iniciar esta análise."/>}
           {!!n&&<div className="technical-mapper">
             <div className="technical-mapper-targets">
@@ -367,15 +427,17 @@ function ExamEditor({source,db,onClose,onSave}) {
               })}
               </div>
             </div>
-            <aside className="technical-mapper-palette" aria-label="Itens disponíveis para relacionar">
-              <div className="technical-mapper-palette-head"><strong>Biblioteca de relações</strong><small>Use <b>Shift+clique</b> para selecionar um intervalo ou <b>+</b> para marcar vários itens do mesmo grupo. Arraste-os juntos para um ou mais aspectos.</small></div>
-              {[{kind:'area',title:'Áreas da ocupação',icon:Layers3,items:areas,search:areaSearch,setSearch:setAreaSearch,empty:'Selecione áreas na aba Fatores técnicos.'},{kind:'competency',title:'Competências relacionadas',icon:ListChecks,items:competencies,search:competencySearch,setSearch:setCompetencySearch,empty:'Selecione competências na aba Fatores técnicos.'}].map(group=>{
+            <aside className="technical-mapper-palette" aria-label="Itens selecionados para mapear">
+              <div className="technical-mapper-palette-head"><strong>Competências da prova</strong><small>Somente os itens escolhidos em <b>Detalhes técnicos</b> aparecem aqui. Arraste as competências para os aspectos CIS; use Shift ou + para selecionar várias. As áreas ficam recolhidas abaixo, caso também precise relacioná-las.</small></div>
+              {[{kind:'competency',title:'Competências para mapear',icon:ListChecks,items:scopedCompetencies,search:competencySearch,setSearch:setCompetencySearch,empty:'Nenhuma competência selecionada em Detalhes técnicos.'},{kind:'area',title:'Áreas da prova (opcional)',icon:Layers3,items:scopedAreas,search:areaSearch,setSearch:setAreaSearch,empty:'Nenhuma área selecionada em Detalhes técnicos.'}].map(group=>{
                 const Icon=group.icon;
-                return <section className="technical-mapper-palette-group" key={group.kind}>
-                  <div className="technical-mapper-palette-title"><Icon size={16}/><strong>{group.title}</strong><span>{group.items.length}</span></div>
-                  <input type="search" aria-label={`Buscar ${group.title.toLowerCase()}`} placeholder="Filtrar itens..." value={group.search} onChange={e=>group.setSearch(e.target.value)}/>
+                const GroupTag=group.kind==='area'?'details':'section';
+                const visibleItems=group.items.filter(item=>item.name.toLowerCase().includes(group.search.toLowerCase()));
+                return <GroupTag className="technical-mapper-palette-group" key={group.kind}>
+                  {group.kind==='area'?<summary className="technical-mapper-palette-title"><Icon size={16}/><strong>{group.title}</strong><span>{group.items.length}</span><ChevronDown size={16}/></summary>:<div className="technical-mapper-palette-title"><Icon size={16}/><strong>{group.title}</strong><span>{group.items.length}</span></div>}
+                  {!!group.items.length&&<input type="search" aria-label={`Buscar ${group.title.toLowerCase()}`} placeholder="Filtrar selecionados..." value={group.search} onChange={e=>group.setSearch(e.target.value)}/>}
                   <div className="technical-mapper-palette-list">
-                    {group.items.filter(item=>item.name.toLowerCase().includes(group.search.toLowerCase())).map((item,idx,visibleItems)=>{
+                    {visibleItems.map(item=>{
                       const active=sourceSelection.kind===group.kind&&sourceSelection.ids.includes(item.id);
                       return <div key={item.id} className={`technical-mapper-source${active?' is-active':''}`}>
                         <button type="button" className="technical-mapper-source-main" draggable
@@ -395,15 +457,16 @@ function ExamEditor({source,db,onClose,onSave}) {
                       </div>;
                     })}
                     {!group.items.length&&<small className="muted">{group.empty}</small>}
+                    {!!group.items.length&&!visibleItems.length&&<small className="muted">Nenhum item encontrado na busca.</small>}
                   </div>
                   {sourceSelection.kind===group.kind&&sourceSelection.ids.length>0&&<div className="technical-mapper-source-selection">
                     <strong>{sourceSelection.ids.length} selecionado{sourceSelection.ids.length===1?'':'s'}</strong>
                     <button type="button" onClick={()=>{setSourceSelection({kind:null,ids:[]});setPickedRelation(null)}}>Limpar</button>
                   </div>}
-                </section>;
+                </GroupTag>;
               })}
               {pickedRelation&&<button type="button" className="technical-mapper-clear-pick" onClick={()=>setPickedRelation(null)}>Cancelar escolha</button>}
-              <p className="technical-mapper-status" role="status">{mapMessage||'O WSOS e a nota original dos aspectos não são alterados.'}</p>
+              <p className="technical-mapper-status" role="status">{mapMessage||'Os aspectos e suas pontuações CIS não são alterados por esse mapeamento.'}</p>
             </aside>
           </div>}
         </div>}
@@ -527,8 +590,8 @@ export default function Exams({db,saveRecord,deleteRecord}) {
       <div className="exam-catalog-toolbar">
         <div className="exam-catalog-primary-fields">
           <label className="exam-catalog-search"><span>Buscar prova</span><SearchBar value={filter} onChange={setFilter} placeholder="Pesquisar provas, módulos ou áreas..."/></label>
-          <label className="exam-catalog-input-field"><span>Edição</span><select value={editionFilter} onChange={e=>setEditionFilter(e.target.value)}><option value="all">Todas as edições</option>{db.editions.map(edition=><option value={edition.id} key={edition.id}>{edition.name}</option>)}</select></label>
-          <label className="exam-catalog-input-field"><span>País de referência</span><select value={countryFilter} onChange={e=>setCountryFilter(e.target.value)}><option value="all">Todos os países</option>{options.countries.map(country=><option value={country} key={country}>{country}</option>)}</select></label>
+          <label className="exam-catalog-input-field"><span>Edição</span><SelectField value={editionFilter} onChange={e=>setEditionFilter(e.target.value)}><option value="all">Todas as edições</option>{db.editions.map(edition=><option value={edition.id} key={edition.id}>{edition.name}</option>)}</SelectField></label>
+          <label className="exam-catalog-input-field"><span>País de referência</span><SelectField value={countryFilter} onChange={e=>setCountryFilter(e.target.value)}><option value="all">Todos os países</option>{options.countries.map(country=><option value={country} key={country}>{country}</option>)}</SelectField></label>
         </div>
         <div className="exam-catalog-toolbar-actions">
           <span className="exam-catalog-result-count" role="status">{filtered.length} de {db.exams.length} provas{onlyRecent?' · cadastros recentes':''}</span>

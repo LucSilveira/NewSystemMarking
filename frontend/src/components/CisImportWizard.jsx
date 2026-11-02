@@ -1,3 +1,4 @@
+import SelectField from './SelectField.jsx';
 import React,{useMemo,useState} from 'react';
 import {ArrowLeft,FileSpreadsheet,AlertTriangle,CheckCircle2,Save,ChevronDown,Plus,Info} from 'lucide-react';
 import CisFileDropzone from './CisFileDropzone.jsx';
@@ -101,7 +102,7 @@ export default function CisImportWizard({db,onBack,onSave,onComplete}){
           <legend>Informações compartilhadas</legend>
           <div className="cis-batch-shared-fields">
             <label className="cis-import-select-label">Edição de referência
-              <select value={editionId} disabled={saving} onChange={e=>setEditionId(e.target.value)}><option value="">Definir mais tarde</option>{db.editions.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select>
+              <SelectField value={editionId} disabled={saving} onChange={e=>setEditionId(e.target.value)}><option value="">Definir mais tarde</option>{db.editions.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</SelectField>
             </label>
             <label className="cis-import-select-label">País de referência
               <input value={referenceCountry} disabled={saving} onChange={e=>setReferenceCountry(e.target.value)} placeholder="Ex.: China (opcional)"/>
@@ -127,14 +128,14 @@ export default function CisImportWizard({db,onBack,onSave,onComplete}){
                   <input disabled={saving||finished} value={choice.title||''} onChange={e=>updateChoice(module.module,{title:e.target.value})} placeholder="Dê um nome identificável à prova"/>
                 </label>
                 <label className="cis-import-select-label">Tipo de prova
-                  <select disabled={saving||finished} value={choice.typeKey||''} onChange={e=>updateChoice(module.module,{typeKey:e.target.value})}>
+                  <SelectField disabled={saving||finished} value={choice.typeKey||''} onChange={e=>updateChoice(module.module,{typeKey:e.target.value})}>
                     <option value="">Escolher tipo...</option>{db.examTypes.map(t=><option key={t.id||t.key} value={t.key}>{t.name}</option>)}
-                  </select>
+                  </SelectField>
                 </label>
                 <label className="cis-import-select-label">Edição (opcional)
-                  <select disabled={saving||finished} value={choice.editionId||''} onChange={e=>updateChoice(module.module,{editionId:e.target.value})}>
+                  <SelectField disabled={saving||finished} value={choice.editionId||''} onChange={e=>updateChoice(module.module,{editionId:e.target.value})}>
                     <option value="">{editionId?'Usar a edição compartilhada':'Definir mais tarde'}</option>{db.editions.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}
-                  </select>
+                  </SelectField>
                 </label>
                 <label className="cis-import-select-label">País (opcional)
                   <input disabled={saving||finished} value={choice.referenceCountry||''} onChange={e=>updateChoice(module.module,{referenceCountry:e.target.value})} placeholder={referenceCountry||'Usar padrão ou preencher depois'}/>

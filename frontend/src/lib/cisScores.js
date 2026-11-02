@@ -60,3 +60,12 @@ export function mergeImportedScores(current,imported,{replace=false}={}){
   }
   return {scores:[...values.values()],added,replaced,skipped};
 }
+
+/** Diagnóstico para importação de correção: nenhum valor e planilha incompleta não são avaliações prontas. */
+export function validateCisScoreCoverage(preview){
+  if(!preview)return {status:'missing',canImport:false,message:'Não foi possível localizar um módulo CIS compatível com a prova selecionada.'};
+  if(preview.warnings.length)return {status:'invalid',canImport:false,message:`Foram encontradas ${preview.warnings.length} divergência(s) entre o XLSX e a prova. Verifique os detalhes antes de continuar.`};
+  if(preview.matched===0)return {status:'empty',canImport:false,message:'Nenhuma nota encontrada na coluna L nas linhas dos aspectos. Preencha as pontuações antes de importar.'};
+  if(preview.missing>0)return {status:'incomplete',canImport:false,message:`Correção incompleta: ${preview.missing} de ${preview.totalAspects} aspecto(s) estão sem nota na coluna L. Zero é uma nota válida; célula vazia não é.`};
+  return {status:'complete',canImport:true,message:`Correção completa: ${preview.matched} aspectos com pontuação reconhecida.`};
+}
